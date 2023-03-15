@@ -1,0 +1,74 @@
+DROP TABLE user_event_roles;
+DROP TABLE event_reviews;
+DROP TABLE event_prices;
+DROP TABLE events_desc;
+DROP TABLE users_bio;
+DROP TABLE tickets;
+DROP TABLE events;
+DROP TABLE users;
+
+CREATE TABLE users (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(20), lastname VARCHAR(20), userType VARCHAR(10), email VARCHAR(40) UNIQUE, status VARCHAR(10), password VARCHAR(20));
+CREATE TABLE events (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(30), address VARCHAR(50), eventType VARCHAR(15), startDate VARCHAR(10), endDate VARCHAR(10), startTime VARCHAR(5), endTime VARCHAR(5), status VARCHAR(10), dateCreated VARCHAR(10));
+CREATE TABLE tickets (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, userId int, eventId int, count int, price double, paidByUserId int, status VARCHAR(10), usedCount int, boughtOnDate VARCHAR(10),
+                            FOREIGN KEY (userId) REFERENCES users(id),
+                            FOREIGN KEY (eventId) REFERENCES events(id),
+                            FOREIGN KEY (paidByUserId) REFERENCES users(id)); 
+CREATE TABLE users_bio (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, userId int, bioText VARCHAR(1000), FOREIGN KEY (userId) REFERENCES users(id));
+CREATE TABLE events_desc (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, eventId int, descText VARCHAR(1000), FOREIGN KEY (eventId) REFERENCES events(id));
+CREATE TABLE event_prices (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, eventId int, price double, status VARCHAR(10), dateCreated VARCHAR(10),  FOREIGN KEY (eventId) REFERENCES events(id));
+CREATE TABLE user_event_roles (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, userId int, eventId int, role VARCHAR(10), status VARCHAR(10), FOREIGN KEY (userId) REFERENCES users(id), FOREIGN KEY (eventId) REFERENCES events(id));
+CREATE TABLE event_reviews (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, userId int, eventId int, mark int CHECK(mark >= 1 AND mark <= 5), reviewText VARCHAR(500), postedOnDate VARCHAR(10), FOREIGN KEY (userId) REFERENCES users(id), FOREIGN KEY (eventId) REFERENCES events(id));
+
+INSERT INTO users (name, lastname, userType, email, status, password) 
+    VALUES  ('Mongo', 'Mongic', 'PHYSICAL', 'mongo@gmail.com', 'ACTIVE', 'mongo123'),
+            ('Boza', 'Bozic', 'PHYSICAL', 'boza@gmail.com', 'ACTIVE', 'boza123'), 
+            ('CoolEvents', '', 'BUSINESS', 'info@coolevents.com', 'ACTIVE', 'cool123'),
+            ('Admin', 'Admin', 'ADMIN', 'admin@eventer.com', 'ACTIVE', 'admin'),
+            ('Janko', 'Janki', 'PHYSICAL', 'janko@gmail.com', 'ACTIVE', 'janko123'),
+            ('Entre', 'Kojukai', 'PHYSICAL', 'entre@kojukai.com', 'ACTIVE', 'entre123');
+
+INSERT INTO users_bio (userId, bioText)
+    VALUES  (1, 'I am very passionate about music, my home town and good beer!'), 
+            (2, 'Entrepreneurial Grindset Bloke here! I love hiking, so if you want to contact me, you better find me on one of the Fruska Gora''s springs or lakes.'),
+            (3, 'The best music festival organizer in the Balkans. Eighteen times Top100 Party in Europe, three times Top10. Music is our passion.'),
+            (4, ''),
+            (5, 'I just like to go partying and I attend every event that is shared on this amazing Event platform. Thank you Eventer Team for showing me all those amazing events!'),
+            (6, 'Motivational Talker, Life Coach, Entrepreneur, Educator');
+
+INSERT INTO events (name, address, eventType, startDate, endDate, startTime, endTime, status, dateCreated)
+    VALUES  ('2000s Fest', 'Novosadski sajam, Hajduk Veljkova, Novi Sad', 'MUSIC', '2023-03-28', '2023-03-29', '20:00', '03:00', 'ACTIVE', '2023-03-15'),
+            ('Topoya Fest', 'Poljoprivredna skola, Backa Topola', 'MUSIC', '2023-06-15', '2023-06-18', '19:00', '04:00', 'ACTIVE', '2023-03-05'),
+            ('Sunny day to enjoy', 'Caffe Gorski smesko, Popovica', 'NATURE', '2023-07-05', '2023-07-05', '10:00', '18:00', 'ACTIVE', '2023-02-26'),
+            ('Entrepreneurship Workshop KG', 'Hotel Industrial, Kragujevac', 'EDUCATION', '2023-02-19', '2023-02-29', '14:00', '12:00', 'ACTIVE', '2023-01-15');
+
+INSERT INTO event_prices (eventId, price, status, dateCreated)
+    VALUES  (1, 850.0, 'ACTIVE', '2023-03-14'),
+            (2, 1250.0, 'INACTIVE', '2023-03-05'),
+            (2, 1600.0, 'ACTIVE', '2023-03-12'),
+            (3, 0.0, 'ACTIVE', '2023-02-26'),
+            (4, 0.0, 'ACTIVE', '2023-01-15');
+
+INSERT INTO events_desc (eventId, descText)
+    VALUES  (1, 'Music festival from our youth! We will be enjoying the best music, music from the late 90s, early 2010s and 2000s !!! Join us for an incredible night.'),
+            (2, 'Welcome to the festival that combines local tradition and modern music. Enjoy kurtos kalacs along side Serbian BBQ specialities, all while enjoying next to the Zobnatica lake.'),
+            (3, 'Join us while we are sunbathing, hiking and making BBQ in the beautiful nature of Fruska Gora. Entry price: A big smile!'),
+            (4, 'A week-long Entrepreneurship cours consisted of whole-day education and interactive workshops. For participants aged 18-25. Grab your ticket and join us!');
+    -- apostrophe (') inside VARCHAR() is escaped by doubling it => '' => Furska Gora''s
+
+INSERT INTO user_event_roles (userId, eventId, role, status)
+    VALUES  (3, 1, 'MAIN_ORG', 'ACTIVE'),
+            (1, 2, 'MAIN_ORG', 'ACTIVE'),
+            (2, 2, 'ORGANIZER', 'ACTIVE'),
+            (2, 3, 'MAIN_ORG', 'ACTIVE'),
+            (2, 4, 'MAIN_ORG', 'ACTIVE'),
+            (6, 4, 'PERFORMER', 'ACTIVE');
+
+INSERT INTO tickets (userId, eventId, count, price, paidByUserId, status, usedCount, boughtOnDate)
+    VALUES  (5, 4, 2, 0.0, 5, 'ACTIVE', 2, '2023-01-20'),
+            (5, 3, 1, 0.0, 5, 'ACTIVE', 0, '2023-03-01'),
+            (5, 1, 1, 850.0, 5, 'ACTIVE', 0, '2023-03-15'),
+            (5, 2, 1, 1600.0, 5, 'ACTIVE', 0, '2023-03-14'),
+            (6, 2, 1, 1600.0, 5, 'ACTIVE', 0, '2023-03-14');
+
+INSERT INTO event_reviews (userId, eventId, mark, reviewText, postedOnDate)
+    VALUES  (6, 4, 5, 'What an amazing experience this was! We learned so much about Entrepreneurship, Design Thinking and Customer Discover. I loved it. I met so many great people. Food was amazing, a bit repetitive though, but still very nice.', '2023-02-28');
