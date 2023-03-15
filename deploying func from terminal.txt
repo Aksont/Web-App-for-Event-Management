@@ -1,1 +1,2 @@
+gcloud init
 gcloud functions deploy [func-name] --entry-point [entry-point-name ]--runtime nodejs16 --trigger-http
