@@ -7,7 +7,7 @@ DROP TABLE tickets;
 DROP TABLE events;
 DROP TABLE users;
 
-CREATE TABLE users (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(20), lastname VARCHAR(20), userType VARCHAR(10), email VARCHAR(40) UNIQUE, status VARCHAR(10), password VARCHAR(20));
+CREATE TABLE users (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(20), lastname VARCHAR(20), userType VARCHAR(10), email VARCHAR(40), status VARCHAR(10), password VARCHAR(20));
 CREATE TABLE events (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(30), address VARCHAR(50), eventType VARCHAR(15), startDate VARCHAR(10), endDate VARCHAR(10), startTime VARCHAR(5), endTime VARCHAR(5), status VARCHAR(10), dateCreated VARCHAR(10));
 CREATE TABLE tickets (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, userId int, eventId int, count int, price double, paidByUserId int, status VARCHAR(10), usedCount int, boughtOnDate VARCHAR(10),
                             FOREIGN KEY (userId) REFERENCES users(id),
