@@ -2,40 +2,42 @@ const express = require('express');
 const mysql = require('mysql');
 const app = express();
 
-const MAIN_TABLE = "users";
+const USERS_TABLE = "users";
+const USERS_BIO_TABLE = "users_bio";
 
 class User {
-    constructor(name, lastname, userType, email, password, status='ACTIVE') {
-      this.name = name;
-      this.lastname = lastname;
-      this.userType = userType;
-      this.email = email;
-      this.status = status;
-      this.password = password;
+    constructor(id, name, lastname, userType, email, password, status='ACTIVE') {
+        this.id = id;
+        this.name = name;
+        this.lastname = lastname;
+        this.userType = userType;
+        this.email = email;
+        this.status = status;
+        this.password = password;
     }
 }
 
 class UserDTO {
     constructor(name, lastname, userType, email, password) {
-      this.name = name;
-      this.lastname = lastname;
-      this.userType = userType;
-      this.email = email;
-      this.password = password;
+        this.name = name;
+        this.lastname = lastname;
+        this.userType = userType;
+        this.email = email;
+        this.password = password;
     }
 }
 
 class UserResponse {
     constructor(name, lastname, userType, email) {
-      this.name = name;
-      this.lastname = lastname;
-      this.userType = userType;
-      this.email = email;
+        this.name = name;
+        this.lastname = lastname;
+        this.userType = userType;
+        this.email = email;
     }
 }
 
 function createUser(data) {
-    let u = new User(data.name, data.lastname, data.userType, data.email, data.password, data.status);
+    let u = new User(data.id, data.name, data.lastname, data.userType, data.email, data.password, data.status);
 
     return u;
 }
@@ -58,6 +60,33 @@ function createUserResponse(user) {
     return u;
 }
 
+class UserBio {
+    constructor(id, userId, bioText) {
+        this.id = id;
+        this.userId = userId;
+        this.bioText = bioText;
+    }
+}
+
+class UserBioResponse {
+    constructor(email, bioText) {
+        this.email = email;
+        this.bioText = bioText;
+    }
+}
+
+function createUserBio(data) {
+    let bio = new UserBio(data.id, data.userId, data.bioText);
+
+    return bio;
+}
+
+function createUserBioResponse(email, bioText="") {
+    let bio = new UserBioResponse(email, bioText);
+
+    return bio;
+}
+
 app.get('/', (req, res) => {
     let message = req.query.message || "user-service";
 
@@ -68,139 +97,208 @@ app.get('/hello', (req, res) => {
     res.status(200).send("user-service");
 })
 
-app.get("/user/:id", async (req, res) => {
+app.get("/user-id/:id", async (req, res) => {
     const id = req.params.id;
-    const query = "SELECT * FROM " + MAIN_TABLE + " WHERE id = " + id;
-    let results = await doQuery(query);
-    // console.log(results)
-    
-    if (results.length !== 0 && results !== null){
-        let user = createUser(results[0]);
-        let userResponse = createUserResponse(user);
-        res.json(userResponse);
-    } else {
+    let user = await getUserById(id);
+
+    if (user === null){
         res.status(404).send("No user with such ID was found.");
     }
+
+    res.json(createUserResponse(user));
+})
+
+app.get("/user-email/:email", async (req, res) => {
+    const email = req.params.email;
+    let user = await getUserByEmail(email);
+
+    if (user === null){
+        res.status(404).send("No user with such email was found.");
+    }
+
+    res.json(createUserResponse(user));
 })
 
 app.post("/register", async (req, res) => {
     let userDTO = createUserDTO(req.body);
-    let isEmailOkay = await isEmailOkayForUse(userDTO.email);
+    let user = await getUserByEmail(userDTO.email);
 
-    if (!isEmailOkay){
+    if (user !== null){
         res.status(409).send("Email is already in use.");
-    } // add additional validations if neccessary 
+    }
 
-    let user = createNewUser(userDTO);
+    user = createNewUser(userDTO);
     const query = fillInsertUserQuery(user);
-    let insertionDetails = await doQuery(query);
+    let sqlOkPacket = await doQuery(query); // sqlOkPacket is a return value when inserting/updating sql table
     
-    if (insertionDetails.insertId){
-        let userResponse = createUserResponse(user);
-        console.log(userResponse);
-        res.json(userResponse);
-    } else {
+    if (!sqlOkPacket.insertId){
         res.status(400).send("Did not register new user.");
+    }
+
+    res.json(createUserResponse(user));
+})
+
+// this currently updates only password
+app.put("/update-info/:email", async (req, res) => {
+    const email = req.params.email;
+    const newPassword = req.body.password;
+    let user = await getUserByEmail(email);
+
+    if (user === null){
+        res.status(404).send("No user with such email was found.");
+    } else if (user.password === newPassword) {
+        res.status(400).send("Can not change the same password.");
+    }
+
+    // TODO updatePassword and updateBio can be together in a promiseSet or smth like that
+    let hasUpdated = await updatePassword(user.id, newPassword);
+
+    if (hasUpdated){
+        res.send("Updated password successfully.");
+    } else {
+        res.status(409).send("Did not update password.");
     }
 })
 
-// TODO update info of an existing user
-app.put("/update-info/:id", async (req, res) => {
+app.get("/user-bio/:email", async (req, res) => {
+    const email = req.params.email;
+    let user = await getUserByEmail(email);
 
+    if (user === null){
+        res.status(404).send("No user with such email was found.");
+    }
+
+    let userBio = await getUserBio(user.id);
+
+    if (userBio){
+        res.json(createUserBioResponse(user.email, userBio.bioText));
+    } else {
+        res.json(createUserBioResponse(user.email));
+    }
 })
 
-// TODO update info of an existing user
-app.delete("/remove-user/:id", async (req, res) => {
+app.post("/add-bio/:email", async (req, res) => {
+    // TODO merge with password update
+    const email = req.params.email;
+    const newBioText = req.body.bioText;
+    let user = await getUserByEmail(email);
 
-})
+    if (user === null){
+        res.status(404).send("No user with such email was found.");
+    }
 
-// TODO add or edit bio
-app.post("/add-bio/:id", async (req, res) => {
+    let isOkay = await addUserBio(user.id, newBioText);
 
-})
-
-// TODO add or edit bio
-app.post("/add-bio/:id", async (req, res) => {
-
-})
-
-// app.get("/user/:id", async (req, res) => {
-//     const query = "SELECT * FROM tickets";
-
-//     pool.query(query, [], (error, results) => {
-//         if (error){
-//             console.log(error);
-//             res.send(error);
-//         } else {
-//             console.log(results)
-//             if (!results){
-//                 res.status(404).send("Not found");
-//             } else {
-//                 res.json(results);
-//             }
-//         }
-//     });
-// })
-
-// app.post("/db", (req, res) => {
-//     const data = {
-//         id : req.body.id,
-//         price : req.body.price,
-//         userId : req.body.userId,
-//         eventId : req.body.eventId 
-//     }
-
-//     const query = "INSERT INTO tickets (id, price, userId, eventId) VALUES (" 
-//     + data.id + "," 
-//     + data.price + ","
-//     + data.userId + ","
-//     + data.eventId +
-//     ")";
+    if (!isOkay){
+        res.status(409).send("Did not update bio."); 
+    }
     
-//     pool.query(query, data, (error, results) => {
-//         if (error){
-//             console.log(error);
-//             res.send(error);
-//         } else {
-//             console.log(results)
-//             if (!results){
-//                 res.status(404).send("Not found");
-//             } else {
-//                 res.json(results);
-//             }
-//         }
-//     });
-// })
+    res.send("Updated bio successfully."); 
+})
 
-// app.delete("/db/:id", (req, res) => {
-//     const id = req.params.id;
-//     const query = "DELETE FROM tickets WHERE id=?";
-    
-//     pool.query(query, id, (error, results) => {
-//         if (error){
-//             console.log(error);
-//             res.send(error);
-//         } else {
-//             console.log(results)
-//             if (!results){
-//                 res.status(404).send("Not found");
-//             } else {
-//                 res.json(results);
-//             }
-//         }
-//     });
-// })
+// TODO update info of an existing user
+app.delete("/delete-user/:email", async (req, res) => {
+    const email = req.params.email;
+    let user = await getUserByEmail(email);
+    console.log(user);
 
-async function isEmailOkayForUse(email){
-    const query = "SELECT * FROM " + MAIN_TABLE + " WHERE email = " + sqlStr(email) + " AND status = " + sqlStr("ACTIVE");
-    let results = await doQuery(query);
-    let isOkay = results.length === 0;
+    if (user === null){
+        res.status(404).send("No user with such email was found.");
+    }
+
+    // tickets should not be refunded, nor disabled
+    // reviews should not be removed, their visualisuation should only be anonymized ("deleted user")
+    // no need to deactivate profile picture, a default one will be shown anyway
+    // events should not be removed or deactivated even if creator's profile is deleted
+
+    let hasDeactivated = await deactivateUser(user.id);
+    if (hasDeactivated){
+        res.send("Deleted user successfully.");
+    } else {
+        res.status(409).send("Did not delete user.");
+    }
+})
+
+async function deactivateUser(id){
+    const query = "UPDATE " + USERS_TABLE + " SET status = " + sqlStr("DELETED") + " WHERE id = " + id;
+    let sqlOkPacket = await doQuery(query);
+
+    return sqlOkPacket.changedRows === 1;
+}
+
+async function updatePassword(id, password){
+    const query = "UPDATE " + USERS_TABLE + " SET password = " + sqlStr(password) + " WHERE id = " + id;
+    let sqlOkPacket = await doQuery(query);
+
+    return sqlOkPacket.changedRows === 1;
+}
+
+async function addUserBio(userId, newBioText){
+    let userBio = await getUserBio(userId);
+    let isOkay;
+
+    if (userBio){
+        isOkay = updateUserBio(userId, newBioText);
+    } else {
+        isOkay = addNewUserBio(userId, newBioText);
+    }
 
     return isOkay;
 }
 
+async function updateUserBio(userId, newBioText){
+    const query = "UPDATE " + USERS_BIO_TABLE + " SET bioText = " + sqlStr(newBioText) + " WHERE userId = " + userId;
+    let sqlOkPacket = await doQuery(query);
+
+    return sqlOkPacket.changedRows === 1;
+}
+
+async function addNewUserBio(userId, newBioText){
+    const query = "INSERT INTO " + USERS_BIO_TABLE + " (userId, bioText) VALUES (" 
+    + userId + "," 
+    + sqlStr(newBioText) + 
+    ")";
+
+    let sqlOkPacket = await doQuery(query);
+
+    return sqlOkPacket.insertId !== null && sqlOkPacket.insertId !== undefined;
+}
+
+async function getUserBio(userId){
+    const query = "SELECT * FROM " + USERS_BIO_TABLE + " WHERE userId = " + userId;
+    let results = await doQuery(query);
+
+    if (results.length === 0){
+        return null;
+    } else {
+        return createUserBio(results[0]);
+    }
+}
+
+async function getUserByEmail(email){
+    const query = "SELECT * FROM " + USERS_TABLE + " WHERE email = " + sqlStr(email) + " AND status = " + sqlStr("ACTIVE");
+    
+    return await getUser(query);
+}
+
+async function getUserById(id){
+    const query = "SELECT * FROM " + USERS_TABLE + " WHERE id = " + id;
+    
+    return await getUser(query);
+}
+
+async function getUser(query){
+    let results = await doQuery(query);
+
+    if (results.length === 0){
+        return null;
+    } else {
+        return createUser(results[0]);
+    }
+}
+
 function fillInsertUserQuery(user) {
-    const query = "INSERT INTO " + MAIN_TABLE + " (name, lastname, userType, email, status, password) VALUES (" 
+    const query = "INSERT INTO " + USERS_TABLE + " (name, lastname, userType, email, status, password) VALUES (" 
     + sqlStr(user.name) + "," 
     + sqlStr(user.lastname) + ","
     + sqlStr(user.userType) + ","
@@ -211,6 +309,8 @@ function fillInsertUserQuery(user) {
 
     return query;
 }
+
+// vvv every function uses: vvv
 
 function sqlStr(word){
     return "'" + word + "'";
@@ -241,3 +341,5 @@ const pool = mysql.createPool({
 });
 
 exports.appfunc = app;
+
+// ^^^ every function uses ^^^
