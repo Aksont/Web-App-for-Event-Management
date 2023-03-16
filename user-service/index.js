@@ -16,7 +16,7 @@ class User {
 }
 
 class UserDTO {
-    constructor(name, lastname, userType, email) {
+    constructor(name, lastname, userType, email, password) {
       this.name = name;
       this.lastname = lastname;
       this.userType = userType;
@@ -40,8 +40,8 @@ function createUser(data) {
     return u;
 }
 
-function createNewUser(data) {
-    let u = new User(data.name, data.lastname, data.userType, data.email, data.password);
+function createNewUser(userDTO) {
+    let u = new User(userDTO.name, userDTO.lastname, userDTO.userType, userDTO.email, userDTO.password);
 
     return u;
 }
@@ -72,37 +72,35 @@ app.get("/user/:id", async (req, res) => {
     const id = req.params.id;
     const query = "SELECT * FROM " + MAIN_TABLE + " WHERE id = " + id;
     let results = await doQuery(query);
-    console.log(results)
+    // console.log(results)
     
     if (results.length !== 0 && results !== null){
         let user = createUser(results[0]);
         let userResponse = createUserResponse(user);
         res.json(userResponse);
     } else {
-        res.status(404).send(null);
+        res.status(404).send("No user with such ID was found.");
     }
 })
 
-// TODO register new user
-// TODO needs testing
 app.post("/register", async (req, res) => {
-    // check that such email a) doesnt exist b) if exists has to be INACTIVE user
     let userDTO = createUserDTO(req.body);
-    let isEmailOkay = isEmailOkayForUse(user.email);
+    let isEmailOkay = await isEmailOkayForUse(userDTO.email);
 
     if (!isEmailOkay){
-        res.status(409).send(null);
-    }
+        res.status(409).send("Email is already in use.");
+    } // add additional validations if neccessary 
 
     let user = createNewUser(userDTO);
     const query = fillInsertUserQuery(user);
-    let hasAddedRow = doQuery(query) === 1;
+    let insertionDetails = await doQuery(query);
     
-    if (hasAddedRow){
+    if (insertionDetails.insertId){
         let userResponse = createUserResponse(user);
+        console.log(userResponse);
         res.json(userResponse);
     } else {
-        res.status(400).send(null);
+        res.status(400).send("Did not register new user.");
     }
 })
 
@@ -193,26 +191,33 @@ app.post("/add-bio/:id", async (req, res) => {
 //     });
 // })
 
-function isEmailOkayForUse(email){
-    const query = "SELECT * FROM " + MAIN_TABLE + " WHERE email = " + email + " AND status = ACTIVE";
-    let isOkay = doQuery(query) === null;
+async function isEmailOkayForUse(email){
+    const query = "SELECT * FROM " + MAIN_TABLE + " WHERE email = " + sqlStr(email) + " AND status = " + sqlStr("ACTIVE");
+    let results = await doQuery(query);
+    let isOkay = results.length === 0;
 
     return isOkay;
 }
 
 function fillInsertUserQuery(user) {
     const query = "INSERT INTO " + MAIN_TABLE + " (name, lastname, userType, email, status, password) VALUES (" 
-    + user.name + "," 
-    + user.lastname + ","
-    + user.userType + ","
-    + user.email + ","
-    + user.status + ","
-    + user.password + 
+    + sqlStr(user.name) + "," 
+    + sqlStr(user.lastname) + ","
+    + sqlStr(user.userType) + ","
+    + sqlStr(user.email) + ","
+    + sqlStr(user.status) + ","
+    + sqlStr(user.password) + 
     ")";
+
+    return query;
+}
+
+function sqlStr(word){
+    return "'" + word + "'";
 }
 
 function doQuery (query) {
-    return new Promise(async (resolve, reject)=>{
+    return new Promise((resolve, reject)=>{
         pool.query(query, (error, results) => {
             if (error){
                 // console.log(error);
