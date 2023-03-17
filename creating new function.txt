@@ -1,9 +1,9 @@
-1) napravis novi folder sa nazivom fje
+1) napravis novi folder sa nazivom fje i udjes
 2) npm init i samo enter enter enter ...
 3) npm install --save-dev @google-cloud/functions-framework
 4) npm install --save express
 5) npm install --save mysql
 6) dodaj u package.json "start": "npx functions-framework --target=appfunc --port=8088" pod scripts{}
-	appfunc je naziv fje koja se export-uje
+	appfunc je naziv fje koja se export-uje, stavljas sa NAVODNICIMA
 	namesti port na neki inkrement 8088, 8089, ...
 7) iskopiraj index.js

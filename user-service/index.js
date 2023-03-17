@@ -33,6 +33,7 @@ class UserResponse {
         this.lastname = lastname;
         this.userType = userType;
         this.email = email;
+        this.bioText = ""; //TODO
     }
 }
 
@@ -68,12 +69,12 @@ class UserBio {
     }
 }
 
-class UserBioResponse {
-    constructor(email, bioText) {
-        this.email = email;
-        this.bioText = bioText;
-    }
-}
+// class UserBioResponse {
+//     constructor(email, bioText) {
+//         this.email = email;
+//         this.bioText = bioText;
+//     }
+// }
 
 function createUserBio(data) {
     let bio = new UserBio(data.id, data.userId, data.bioText);
@@ -81,11 +82,11 @@ function createUserBio(data) {
     return bio;
 }
 
-function createUserBioResponse(email, bioText="") {
-    let bio = new UserBioResponse(email, bioText);
+// function createUserBioResponse(email, bioText="") {
+//     let bio = new UserBioResponse(email, bioText);
 
-    return bio;
-}
+//     return bio;
+// }
 
 app.get('/', (req, res) => {
     let message = req.query.message || "user-service";
@@ -138,6 +139,7 @@ app.post("/register", async (req, res) => {
     res.json(createUserResponse(user));
 })
 
+// TODO: button for password update (don't combine with bio update)
 // this currently updates only password
 app.put("/update-info/:email", async (req, res) => {
     const email = req.params.email;
@@ -150,7 +152,6 @@ app.put("/update-info/:email", async (req, res) => {
         res.status(400).send("Can not change the same password.");
     }
 
-    // TODO updatePassword and updateBio can be together in a promiseSet or smth like that
     let hasUpdated = await updatePassword(user.id, newPassword);
 
     if (hasUpdated){
@@ -160,25 +161,27 @@ app.put("/update-info/:email", async (req, res) => {
     }
 })
 
-app.get("/user-bio/:email", async (req, res) => {
-    const email = req.params.email;
-    let user = await getUserByEmail(email);
+// not neccessary if bio is going to be merged into UserResponse
+//
+// app.get("/user-bio/:email", async (req, res) => {
+//     const email = req.params.email;
+//     let user = await getUserByEmail(email);
 
-    if (user === null){
-        res.status(404).send("No user with such email was found.");
-    }
+//     if (user === null){
+//         res.status(404).send("No user with such email was found.");
+//     }
 
-    let userBio = await getUserBio(user.id);
+//     let userBio = await getUserBio(user.id);
 
-    if (userBio){
-        res.json(createUserBioResponse(user.email, userBio.bioText));
-    } else {
-        res.json(createUserBioResponse(user.email));
-    }
-})
+//     if (userBio){
+//         res.json(createUserBioResponse(user.email, userBio.bioText));
+//     } else {
+//         res.json(createUserBioResponse(user.email));
+//     }
+// })
 
+// TODO: button for bio update (don't combine with password update)
 app.post("/add-bio/:email", async (req, res) => {
-    // TODO merge with password update
     const email = req.params.email;
     const newBioText = req.body.bioText;
     let user = await getUserByEmail(email);
