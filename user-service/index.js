@@ -43,11 +43,11 @@ function createUser(data) {
     return u;
 }
 
-function createNewUser(userDTO) {
-    let u = new User(userDTO.name, userDTO.lastname, userDTO.userType, userDTO.email, userDTO.password);
+// function createNewUser(userDTO) {
+//     let u = new User(userDTO.name, userDTO.lastname, userDTO.userType, userDTO.email, userDTO.password);
 
-    return u;
-}
+//     return u;
+// }
 
 function createUserDTO(data) {
     let u = new UserDTO(data.name, data.lastname, data.userType, data.email, data.password);
@@ -128,8 +128,9 @@ app.post("/register", async (req, res) => {
         res.status(409).send("Email is already in use.");
     }
 
-    user = createNewUser(userDTO);
-    const query = fillInsertUserQuery(user);
+    // user = createNewUser(userDTO);
+    // const query = fillInsertUserQuery(user);
+    const query = fillInsertUserQuery(userDTO);
     let sqlOkPacket = await doQuery(query); // sqlOkPacket is a return value when inserting/updating sql table
     
     if (!sqlOkPacket.insertId){
@@ -214,7 +215,7 @@ app.delete("/delete-user/:email", async (req, res) => {
     // no need to deactivate profile picture, a default one will be shown anyway
     // events should not be removed or deactivated even if creator's profile is deleted
 
-    let hasDeactivated = await deactivateUser(user.id);
+    let hasDeactivated = await deleteUser(user.id);
     if (hasDeactivated){
         res.send("Deleted user successfully.");
     } else {
@@ -222,7 +223,7 @@ app.delete("/delete-user/:email", async (req, res) => {
     }
 })
 
-async function deactivateUser(id){
+async function deleteUser(id){
     const query = "UPDATE " + USERS_TABLE + " SET status = " + sqlStr("DELETED") + " WHERE id = " + id;
     let sqlOkPacket = await doQuery(query);
 
