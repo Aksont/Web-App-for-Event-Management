@@ -4,6 +4,7 @@ const app = express();
 
 const EVENTS_TABLE = "events";
 const EVENTS_DESC_TABLE = "events_desc";
+const USER_EVENT_ROLES_TABLE = "user_event_roles";
 
 class Event {
     constructor(id, name, address, eventType, startDate, endDate, startTime, endTime, dateCreated, status='ACTIVE') {
@@ -90,6 +91,47 @@ function createEventDesc(data) {
     return desc;
 }
 
+class Role {
+    constructor(id, userId, eventId, role, status) {
+        this.id = id;
+        this.userId = userId;
+        this.eventId = eventId;
+        this.role = role;
+        this.status = status;
+    }
+}
+
+function createRole(data) {
+    let r = new Role(data.id, data.userId, data.eventId, data.role, data.status);
+
+    return r;
+}
+
+class RoleDTO {
+    constructor(userId, eventId, role) {
+        this.userId = userId;
+        this.eventId = eventId;
+        this.role = role;
+    }
+}
+
+function createRoleDTO(data) {
+    let r = new RoleDTO(data.userId, data.eventId, data.role);
+
+    return r;
+}
+
+function createRoleDTOs(data) {
+    let roleDTOs = []
+    
+    for (let rd of data){
+        let r = new RoleDTO(data.userId, data.eventId, data.role);
+        roleDTOs.push(r);
+    }
+
+    return roleDTOs;
+}
+
 app.get('/', (req, res) => {
     let message = req.query.message || "event-service";
 
@@ -169,20 +211,77 @@ app.post("/update-description/:id", async (req, res) => {
 
 app.put("/set-price/:id", async (req, res) => {
     // TODO
+    // check if already exists
+    // if exists set previous to INACTIVE
+
+})
+
+app.get("/get-roles/:userId/:eventId", async (req, res) => {
+    const userId = req.params.userId;
+    const eventId = req.params.eventId;
+
+    let roles = await getRoles(userId, eventId);
+
+    res.json(roles);
+})
+
+// *TODO* reorganize so that DTO takes email and then finds userId by email, in response also send emails
+// for later use
+// MAIN_ORG, ORGANIZER, PERFORMER
+app.post("/add-role/:id", async (req, res) => {
+    const roleDTO = createRoleDTO(req.body);
+    const id = req.params.id;
+    let event = await getEvent(id);
+
+    if (event === null){
+        res.status(404).send("No event with such ID was found.");
+    }
+
+    if (doesAlreadyHaveSuchRole(roleDTO)){
+        res.status(409).send("User already has the same role assigned.");
+    } 
+
+    let isOkay = await addRole(event.id, newDescText);
+
+    if (!isOkay){
+        res.status(409).send("Did not add role."); 
+    }
+    
+    res.send("Added role successfully."); 
 })
 
 // when creating event
-app.post("/add-roles/:id", async (req, res) => {
-    // TODO
+app.post("/add-roles-event-creation/:id", async (req, res) => {
+    const roleDTOs = createRoleDTOs(req.body);
+    const id = req.params.id;
+    let event = await getEvent(id);
+
+    if (event === null){
+        res.status(404).send("No event with such ID was found.");
+    }
+
+    if (doesAlreadyHaveSuchRole(roleDTO)){
+        res.status(409).send("User already has the same role assigned.");
+    } 
+
+    for (let r of roleDTOs){
+        addRole(event.id, newDescText);
+    }
+    
+    res.send("Added role successfully."); 
 })
 
-// for later use
-app.post("/add-role/:id", async (req, res) => {
-    // TODO
-})
+app.delete("/delete-role/:userId/:eventId", async (req, res) => {
+    const userId = req.params.userId;
+    const eventId = req.params.eventId;
 
-app.delete("/delete-role/:id", async (req, res) => {
-    // TODO
+    let hasDeactivated = await deleteRole(userId, eventId);
+
+    if (hasDeactivated){
+        res.send("Deleted role successfully.");
+    } else {
+        res.status(409).send("Did not delete role.");
+    }
 })
 
 app.post("/add-review/:id", async (req, res) => {
@@ -249,6 +348,52 @@ async function addEventDesc(eventId, newDescText){
     }
 
     return isOkay;
+}
+
+async function doesAlreadyHaveSuchRole(userId, eventId, role){
+    let roles = await getRoles(userId, eventId);
+
+    for (let r of roles){
+        if (r.role === role){
+            return true;
+        }
+    }
+
+    return false;
+}
+
+async function getRoles(userId, eventId){
+    const query = "SELECT * FROM " + USER_EVENT_ROLES_TABLE + " WHERE userId = " + userId + " AND eventId = " + eventId + " status = " + sqlStr("ACTIVE") ;
+    let roles = []
+    let results = await doQuery(query);
+
+    if (results.length !== 0){
+        for (let r of results){
+            roles.push(createRole(r));
+        }
+    }
+
+    return roles;
+}
+
+async function addRole(roleDTO){
+    const query = "INSERT INTO " + USER_EVENT_ROLES_TABLE + " (userId, eventId, role, status) VALUES (" 
+    + sqlStr(roleDTO.userId) + "," 
+    + sqlStr(roleDTO.eventId) + "," 
+    + sqlStr(roleDTO.role) + "," 
+    + sqlStr("ACTIVE") + 
+    ")";
+
+    let sqlOkPacket = await doQuery(query);
+
+    return sqlOkPacket.insertId !== null && sqlOkPacket.insertId !== undefined;
+}
+
+async function deleteRole(userId, eventId){
+    const query = "UPDATE " + USER_EVENT_ROLES_TABLE + " SET status = " + sqlStr("DELETED") + " WHERE userId = " + userId + " AND eventId = " + eventId;
+    let sqlOkPacket = await doQuery(query);
+
+    return sqlOkPacket.changedRows === 1;
 }
 
 async function updateEventDesc(eventId, newDescText){
