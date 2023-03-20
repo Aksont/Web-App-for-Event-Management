@@ -5,6 +5,7 @@ const app = express();
 const EVENTS_TABLE = "events";
 const EVENTS_DESC_TABLE = "events_desc";
 const USER_EVENT_ROLES_TABLE = "user_event_roles";
+const EVENT_PRICES_TABLE = "event_prices";
 
 class Event {
     constructor(id, name, address, eventType, startDate, endDate, startTime, endTime, dateCreated, status='ACTIVE') {
@@ -132,6 +133,21 @@ function createRoleDTOs(data) {
     return roleDTOs;
 }
 
+class Price {
+    constructor(id, eventId, price, dateCreated) {
+        this.id = id;
+        this.price = price;
+        this.eventId = eventId;
+        this.dateCreated = dateCreated;
+    }
+}
+
+function createPrice(data) {
+    let p = new Price(data.id, data.eventId, data.price, data.dateCreated);
+
+    return p;
+}
+
 app.get('/', (req, res) => {
     let message = req.query.message || "event-service";
 
@@ -209,11 +225,36 @@ app.post("/update-description/:id", async (req, res) => {
 
 })
 
-app.put("/set-price/:id", async (req, res) => {
-    // TODO
-    // check if already exists
-    // if exists set previous to INACTIVE
+app.get("/price/:id", async (req, res) => {
+    const id = req.params.id;
+    let event = await getEvent(id);
 
+    if (event === null){
+        res.status(404).send("No event with such ID was found.");
+    }
+
+    let price = await getEventPrice(id);
+
+    res.json(price.price);
+})
+
+app.post("/price/:eventId", async (req, res) => {
+    const id = req.params.eventId;
+    const newPrice = req.body.newPrice;
+    let event = await getEvent(id);
+
+    if (event === null){
+        res.status(404).send("No event with such ID was found.");
+    }
+
+    let oldPrice = await getEventPrice(id);
+
+    if (oldPrice){
+        deactivateOldPrice(oldPrice.id);
+    }
+
+    addEventPrice(id, newPrice);
+    res.send("Successfully updated event price");
 })
 
 app.get("/get-roles/:userId/:eventId", async (req, res) => {
@@ -260,13 +301,14 @@ app.post("/add-roles-event-creation/:id", async (req, res) => {
         res.status(404).send("No event with such ID was found.");
     }
 
-    if (doesAlreadyHaveSuchRole(roleDTO)){
-        res.status(409).send("User already has the same role assigned.");
-    } 
+    // no need to check since this is creation of the event thus no previous roles exist
+    // if (doesAlreadyHaveSuchRole(roleDTO)){
+    //     res.status(409).send("User already has the same role assigned.");
+    // } 
 
     for (let r of roleDTOs){
         addRole(event.id, newDescText);
-    }
+    } 
     
     res.send("Added role successfully."); 
 })
@@ -303,6 +345,38 @@ function validateNewEventData(eventDTO){
     // end date == start date or after
     // if same date, end time after start time
     return true;
+}
+
+async function getEventPrice(eventId){
+    const query = "SELECT * FROM " + EVENT_PRICES_TABLE + " WHERE eventId = " + eventId + " AND status = " + sqlStr("ACTIVE") ;
+
+    let results = await doQuery(query);
+
+    if (results.length === 0){
+        return null;
+    } else {
+        return createPrice(results[0]);
+    }
+}
+
+async function deactivateOldPrice(oldPriceId){
+    const query = "UPDATE " + EVENT_PRICES_TABLE + " SET status = " + sqlStr("INACTIVE") + " WHERE id = " + oldPriceId;
+    let sqlOkPacket = await doQuery(query);
+
+    return sqlOkPacket.changedRows === 1;
+}
+
+async function addEventPrice(eventId, price){
+    const query = "INSERT INTO " + EVENT_PRICES_TABLE + " (eventId, price, status, dateCreated) VALUES (" 
+    + sqlStr(eventId) + "," 
+    + sqlStr(price) + "," 
+    + sqlStr("ACTIVE") + ","
+    + sqlStr(getTodayDate())
+    ")";
+
+    let sqlOkPacket = await doQuery(query);
+
+    return sqlOkPacket.insertId !== null && sqlOkPacket.insertId !== undefined;
 }
 
 async function getEvent(id){
