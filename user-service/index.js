@@ -137,6 +137,8 @@ app.post("/register", async (req, res) => {
         res.status(400).send("Did not register new user.");
     }
 
+    user = await getUserByEmail(userDTO.email);
+    console.log(user);
     res.json(createUserResponse(user));
 })
 
@@ -307,7 +309,7 @@ function fillInsertUserQuery(user) {
     + sqlStr(user.lastname) + ","
     + sqlStr(user.userType) + ","
     + sqlStr(user.email) + ","
-    + sqlStr(user.status) + ","
+    + sqlStr("ACTIVE") + ","
     + sqlStr(user.password) + 
     ")";
 
