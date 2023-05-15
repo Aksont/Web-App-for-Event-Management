@@ -22,21 +22,28 @@ import BusinessNavbar from './layouts/BusinessNavbar';
 // import AllObjectsList from './components/business/AllObjectsList';
 // import { CreateObjectForm } from './components/forms/CreateObjectForm';
 import { getRole } from './services/utils/AuthService';
+import AdminNavbar from './layouts/AdminNavbar';
+import UnderConstructionPage from './components/business/UnderConstructionPage';
+import { CreateEventForm } from './components/forms/CreateEventForm';
 
 function App() {
   const registrationForm = <Container><RegistrationForm /></Container>
   const loginForm = <Container><LoginForm /></Container>
+  const logoutPage = <Container><LogoutPage /></Container>
+
+  const unavailablePage = <Container><UnavailablePage /></Container>
+  const underConstructionPage = <Container><UnderConstructionPage /></Container>
+
   // const requestsList = <Container><RequestsList /></Container>
   // const requestPreview = <Container><RequestPreview /></Container>
   // const certificatesList = <Container><CertificatesList /></Container>
   // const certificatePreview = <Container><CertificatePreview /></Container>
   // const adminFirstPage = <Container><AdminFirstPage /></Container>
   // const clientFirstPage = <Container><ClientFirstPage /></Container>
-  const logoutPage = <Container><LogoutPage /></Container>
-  const unavailablePage = <Container><UnavailablePage /></Container>
+  const createEventForm = <Container><CreateEventForm /></Container>
   // const userObjectsList = <Container><UserObjectsList /></Container>
   // const allObjectsList = <Container><AllObjectsList /></Container>
-  // const createObjectForm = <Container><CreateObjectForm /></Container>
+  // const createObjectForm = <Container><CreateObjectForm /></Container>'
 
   const [navBar, setNavBar] = useState(getNavbarByUserRole());
 
@@ -51,8 +58,9 @@ function App() {
       return <PhysicalNavbar />;
     } else if(userRole === "BUSINESS"){
       return <BusinessNavbar />;
-    }
-    else{
+    } else if(userRole === "ADMIN"){
+      return <AdminNavbar />;
+    } else{
       return <GuestNavbar />;
     }
   }
@@ -64,20 +72,17 @@ function App() {
                   <Route path="/register" element={registrationForm} />
                   <Route path="/login" element={loginForm} />
                   <Route path="/logout" element={logoutPage} />
-                  {/* <Route path='/client' element={clientFirstPage} /> */}
 
-                  {/*<Route path='/admin/certificates/:id' element={certificatePreview}/> {/* preview, validate, remove - 6, 7, 8*/}
-                  {/*<Route path='/admin/certificates' element={certificatesList}/> {/* list all, button for detailed view - 5 */}
+                  <Route path="/explore" element={underConstructionPage} />
 
-                  {/*<Route path='/admin/requests/:email' element={requestPreview}/> {/* preview, accept, decline - 2, 3, 4*/} 
-                  {/*<Route path='/admin/requests' element={requestsList}/> {/* list all, button for detailed view - 1*/}
-{/* 
-                  <Route path='/admin/objects/:email' element={userObjectsList}/>
-                  <Route path='/admin/objects' element={allObjectsList}/>
-                  
-                  <Route path='/admin/newObject' element={createObjectForm}/> */}
+                  <Route path="/business/organize" element={createEventForm} />
+                  <Route path="/business/my-events" element={underConstructionPage} />
+                  <Route path="/business/settings" element={underConstructionPage} />
 
-                  {/* <Route path='/admin' element={adminFirstPage}/> */}
+                  <Route path="/client/tickets" element={underConstructionPage} />
+
+                  <Route path="/admin/events-to-approve" element={underConstructionPage} />
+                  <Route path="/admin/reviews-to-approve" element={underConstructionPage} /> 
 
                   <Route path="*" element={unavailablePage} />
                 </Route>

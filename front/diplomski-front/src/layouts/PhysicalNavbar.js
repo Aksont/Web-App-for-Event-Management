@@ -11,10 +11,8 @@ export default function PhysicalNavbar(){
         <Navbar.Toggle />
         <Navbar.Collapse className="ps-2">
             <Nav className="ms-auto">
-                <Nav.Link href="/events">Explore</Nav.Link>
-                <Nav.Link href="/tickets">Tickets</Nav.Link>
-                {/* <Nav.Link href="/profile">Profile</Nav.Link>
-                <Nav.Link href="/settings">Settings</Nav.Link> */}
+                <Nav.Link href="/explore">Explore</Nav.Link>
+                <Nav.Link href="/client/tickets">Tickets</Nav.Link>
                 <Nav.Link href="/logout">Logout</Nav.Link>
             </Nav>
         </Navbar.Collapse>

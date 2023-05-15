@@ -3,7 +3,7 @@ import '../assets/styles/nav.css';
 import '../assets/styles/style.css';
 import {Nav, Navbar, NavDropdown} from 'react-bootstrap';
 
-export default function BusinessNavbar(){
+export default function AdminNavbar(){
     const logo = require('../assets/images/logosh.png')
 
     return <Navbar bg="darkBlue" variant="dark" sticky='top' expand="md" collapseOnSelect> 
@@ -11,11 +11,8 @@ export default function BusinessNavbar(){
         <Navbar.Toggle />
         <Navbar.Collapse className="ps-2">
             <Nav className="ms-auto">
-                {/* also a link for profile, but so that the clients could see business profiles */}
-                <Nav.Link href="/explore">Explore</Nav.Link>
-                <Nav.Link href="/business/organize">Organize</Nav.Link>
-                <Nav.Link href="/business/my-events">My events</Nav.Link>
-                <Nav.Link href="/business/settings">Settings</Nav.Link>
+                <Nav.Link href="/admin/events-to-approve">Events</Nav.Link>
+                <Nav.Link href="/admin/reviews-to-approve">Reviews</Nav.Link>
                 <Nav.Link href="/logout">Logout</Nav.Link>
             </Nav>
         </Navbar.Collapse>

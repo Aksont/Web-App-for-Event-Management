@@ -8,10 +8,12 @@ const USER_EVENT_ROLES_TABLE = "user_event_roles";
 const EVENT_PRICES_TABLE = "event_prices";
 
 class Event {
-    constructor(id, name, address, eventType, startDate, endDate, startTime, endTime, dateCreated, status='ACTIVE') {
+    constructor(id, organizerEmail, name, address, city, eventType, startDate, endDate, startTime, endTime, dateCreated, status='ACTIVE') {
         this.id = id;
+        this.organizerEmail = organizerEmail;
         this.name = name;
         this.address = address;
+        this.city = city;
         this.eventType = eventType;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -23,9 +25,11 @@ class Event {
 }
 
 class EventDTO {
-    constructor(name, address, eventType, startDate, endDate, startTime, endTime) {
+    constructor(organizerEmail, name, address, city, eventType, startDate, endDate, startTime, endTime) {
+        this.organizerEmail = organizerEmail;
         this.name = name;
         this.address = address;
+        this.city = city;
         this.eventType = eventType;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -35,10 +39,12 @@ class EventDTO {
 }
 
 class EventResponse {
-    constructor(id, name, address, eventType, startDate, endDate, startTime, endTime, dateCreated, status) {
+    constructor(id, organizerEmail, name, address, city, eventType, startDate, endDate, startTime, endTime, dateCreated, status) {
         this.id = id;
+        this.organizerEmail = organizerEmail;
         this.name = name;
         this.address = address;
+        this.city = city;
         this.eventType = eventType;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -46,35 +52,31 @@ class EventResponse {
         this.endTime = endTime;
         this.dateCreated = dateCreated;
         this.status = status;
-        this.mainOrganizator = null;  //TODO
-        this.organizers = []; //TODO
-        this.performers = []; //TODO
         this.eventDescText = "";
     }
 }
 
 function createEvent(data) {
-    let e = new Event(data.id, data.name, data.address, data.eventType, data.startDate, data.endDate, data.startTime, data.endTime, data.dateCreated, data.status);
+    let e = new Event(data.id, data.organizerEmail, data.name, data.address, data.city, data.eventType, data.startDate, data.endDate, data.startTime, data.endTime, data.dateCreated, data.status);
 
     return e;
 }
 
 function createNewEvent(data) {
     console.log(data)
-    let e = new Event("", data.name, data.address, data.eventType, data.startDate, data.endDate, data.startTime, data.endTime, getTodayDate());
+    let e = new Event("", data.organizerEmail, data.name, data.address, data.city, data.eventType, data.startDate, data.endDate, data.startTime, data.endTime, getTodayDate());
 
     return e;
 }
 
 function createEventDTO(data) {
-    let u = new EventDTO(data.name, data.address, data.eventType, data.startDate, data.endDate, data.startTime, data.endTime);
+    let u = new EventDTO(data.organizerEmail, data.name, data.address, data.city, data.eventType, data.startDate, data.endDate, data.startTime, data.endTime);
 
     return u;
 }
 
 async function createEventResponse(event) {
-    //TODO add mainOrganizator, organizers, performers
-    let u = new EventResponse(event.id, event.name, event.address, event.eventType, event.startDate, event.endDate, event.startTime, event.endTime, event.dateCreated, event.status);
+    let u = new EventResponse(event.id, event.organizerEmail, event.name, event.address, event.eventType, event.startDate, event.endDate, event.startTime, event.endTime, event.dateCreated, event.status);
     let eventDesc = await getEventDesc(event.id);
 
     if (eventDesc){
@@ -98,46 +100,46 @@ function createEventDesc(data) {
     return desc;
 }
 
-class Role {
-    constructor(id, userId, eventId, role, status) {
-        this.id = id;
-        this.userId = userId;
-        this.eventId = eventId;
-        this.role = role;
-        this.status = status;
-    }
-}
+// class Role {
+//     constructor(id, userId, eventId, role, status) {
+//         this.id = id;
+//         this.userId = userId;
+//         this.eventId = eventId;
+//         this.role = role;
+//         this.status = status;
+//     }
+// }
 
-function createRole(data) {
-    let r = new Role(data.id, data.userId, data.eventId, data.role, data.status);
+// function createRole(data) {
+//     let r = new Role(data.id, data.userId, data.eventId, data.role, data.status);
 
-    return r;
-}
+//     return r;
+// }
 
-class RoleDTO {
-    constructor(userId, eventId, role) {
-        this.userId = userId;
-        this.eventId = eventId;
-        this.role = role;
-    }
-}
+// class RoleDTO {
+//     constructor(userId, eventId, role) {
+//         this.userId = userId;
+//         this.eventId = eventId;
+//         this.role = role;
+//     }
+// }
 
-function createRoleDTO(data) {
-    let r = new RoleDTO(data.userId, data.eventId, data.role);
+// function createRoleDTO(data) {
+//     let r = new RoleDTO(data.userId, data.eventId, data.role);
 
-    return r;
-}
+//     return r;
+// }
 
-function createRoleDTOs(data) {
-    let roleDTOs = []
+// function createRoleDTOs(data) {
+//     let roleDTOs = []
     
-    for (let rd of data){
-        let r = new RoleDTO(data.userId, data.eventId, data.role);
-        roleDTOs.push(r);
-    }
+//     for (let rd of data){
+//         let r = new RoleDTO(data.userId, data.eventId, data.role);
+//         roleDTOs.push(r);
+//     }
 
-    return roleDTOs;
-}
+//     return roleDTOs;
+// }
 
 class Price {
     constructor(id, eventId, price, dateCreated) {
@@ -271,74 +273,74 @@ app.post("/price/:eventId", async (req, res) => {
     res.send("Successfully updated event price");
 })
 
-app.get("/user-roles-for-event/:userId/:eventId", async (req, res) => {
-    const userId = req.params.userId;
-    const eventId = req.params.eventId;
+// app.get("/user-roles-for-event/:userId/:eventId", async (req, res) => {
+//     const userId = req.params.userId;
+//     const eventId = req.params.eventId;
 
-    let roles = await getRoles(userId, eventId);
+//     let roles = await getRoles(userId, eventId);
 
-    res.json(roles);
-})
+//     res.json(roles);
+// })
 
-// *TODO* reorganize so that DTO takes email and then finds userId by email, in response also send emails
-// for later use
-// MAIN_ORG, ORGANIZER, PERFORMER
-app.post("/add-role/:id", async (req, res) => {
-    const roleDTO = createRoleDTO(req.body);
-    const id = req.params.id;
-    let event = await getEvent(id);
+// // *TODO* reorganize so that DTO takes email and then finds userId by email, in response also send emails
+// // for later use
+// // MAIN_ORG, ORGANIZER, PERFORMER
+// app.post("/add-role/:id", async (req, res) => {
+//     const roleDTO = createRoleDTO(req.body);
+//     const id = req.params.id;
+//     let event = await getEvent(id);
 
-    if (event === null){
-        res.status(404).send("No event with such ID was found.");
-    }
+//     if (event === null){
+//         res.status(404).send("No event with such ID was found.");
+//     }
 
-    if (doesAlreadyHaveSuchRole(roleDTO)){
-        res.status(409).send("User already has the same role assigned.");
-    } 
+//     if (doesAlreadyHaveSuchRole(roleDTO)){
+//         res.status(409).send("User already has the same role assigned.");
+//     } 
 
-    let isOkay = await addRole(event.id, newDescText);
+//     let isOkay = await addRole(event.id, newDescText);
 
-    if (!isOkay){
-        res.status(409).send("Did not add role."); 
-    }
+//     if (!isOkay){
+//         res.status(409).send("Did not add role."); 
+//     }
     
-    res.send("Added role successfully."); 
-})
+//     res.send("Added role successfully."); 
+// })
 
-// when creating event
-app.post("/add-roles-event-creation/:id", async (req, res) => {
-    const roleDTOs = createRoleDTOs(req.body);
-    const id = req.params.id;
-    let event = await getEvent(id);
+// // when creating event
+// app.post("/add-roles-event-creation/:id", async (req, res) => {
+//     const roleDTOs = createRoleDTOs(req.body);
+//     const id = req.params.id;
+//     let event = await getEvent(id);
 
-    if (event === null){
-        res.status(404).send("No event with such ID was found.");
-    }
+//     if (event === null){
+//         res.status(404).send("No event with such ID was found.");
+//     }
 
-    // no need to check since this is creation of the event thus no previous roles exist
-    // if (doesAlreadyHaveSuchRole(roleDTO)){
-    //     res.status(409).send("User already has the same role assigned.");
-    // } 
+//     // no need to check since this is creation of the event thus no previous roles exist
+//     // if (doesAlreadyHaveSuchRole(roleDTO)){
+//     //     res.status(409).send("User already has the same role assigned.");
+//     // } 
 
-    for (let r of roleDTOs){
-        addRole(event.id, newDescText);
-    } 
+//     for (let r of roleDTOs){
+//         addRole(event.id, newDescText);
+//     } 
     
-    res.send("Added role successfully."); 
-})
+//     res.send("Added role successfully."); 
+// })
 
-app.delete("/delete-role/:userId/:eventId", async (req, res) => {
-    const userId = req.params.userId;
-    const eventId = req.params.eventId;
+// app.delete("/delete-role/:userId/:eventId", async (req, res) => {
+//     const userId = req.params.userId;
+//     const eventId = req.params.eventId;
 
-    let hasDeactivated = await deleteRole(userId, eventId);
+//     let hasDeactivated = await deleteRole(userId, eventId);
 
-    if (hasDeactivated){
-        res.send("Deleted role successfully.");
-    } else {
-        res.status(409).send("Did not delete role.");
-    }
-})
+//     if (hasDeactivated){
+//         res.send("Deleted role successfully.");
+//     } else {
+//         res.status(409).send("Did not delete role.");
+//     }
+// })
 
 app.post("/add-review/:id", async (req, res) => {
     // TODO
@@ -438,56 +440,56 @@ async function addEventDesc(eventId, newDescText){
     return isOkay;
 }
 
-async function doesAlreadyHaveSuchRole(userId, eventId, role){
-    let roles = await getRoles(userId, eventId);
+// async function doesAlreadyHaveSuchRole(userId, eventId, role){
+//     let roles = await getRoles(userId, eventId);
 
-    for (let r of roles){
-        if (r.role === role){
-            return true;
-        }
-    }
+//     for (let r of roles){
+//         if (r.role === role){
+//             return true;
+//         }
+//     }
 
-    return false;
-}
+//     return false;
+// }
 
-async function getRoles(userId, eventId){
-    const query = "SELECT * FROM " + USER_EVENT_ROLES_TABLE 
-                + " WHERE userId = " + userId 
-                + " AND eventId = " + eventId 
-                + " AND status = " + sqlStr("ACTIVE")
-                ;
+// async function getRoles(userId, eventId){
+//     const query = "SELECT * FROM " + USER_EVENT_ROLES_TABLE 
+//                 + " WHERE userId = " + userId 
+//                 + " AND eventId = " + eventId 
+//                 + " AND status = " + sqlStr("ACTIVE")
+//                 ;
     
-    let roles = []
-    let results = await doQuery(query);
+//     let roles = []
+//     let results = await doQuery(query);
 
-    if (results.length !== 0){
-        for (let r of results){
-            roles.push(createRole(r));
-        }
-    }
+//     if (results.length !== 0){
+//         for (let r of results){
+//             roles.push(createRole(r));
+//         }
+//     }
 
-    return roles;
-}
+//     return roles;
+// }
 
-async function addRole(roleDTO){
-    const query = "INSERT INTO " + USER_EVENT_ROLES_TABLE + " (userId, eventId, role, status) VALUES (" 
-    + sqlStr(roleDTO.userId) + "," 
-    + sqlStr(roleDTO.eventId) + "," 
-    + sqlStr(roleDTO.role) + "," 
-    + sqlStr("ACTIVE") + 
-    ")";
+// async function addRole(roleDTO){
+//     const query = "INSERT INTO " + USER_EVENT_ROLES_TABLE + " (userId, eventId, role, status) VALUES (" 
+//     + sqlStr(roleDTO.userId) + "," 
+//     + sqlStr(roleDTO.eventId) + "," 
+//     + sqlStr(roleDTO.role) + "," 
+//     + sqlStr("ACTIVE") + 
+//     ")";
 
-    let sqlOkPacket = await doQuery(query);
+//     let sqlOkPacket = await doQuery(query);
 
-    return sqlOkPacket.insertId !== null && sqlOkPacket.insertId !== undefined;
-}
+//     return sqlOkPacket.insertId !== null && sqlOkPacket.insertId !== undefined;
+// }
 
-async function deleteRole(userId, eventId){
-    const query = "UPDATE " + USER_EVENT_ROLES_TABLE + " SET status = " + sqlStr("DELETED") + " WHERE userId = " + userId + " AND eventId = " + eventId;
-    let sqlOkPacket = await doQuery(query);
+// async function deleteRole(userId, eventId){
+//     const query = "UPDATE " + USER_EVENT_ROLES_TABLE + " SET status = " + sqlStr("DELETED") + " WHERE userId = " + userId + " AND eventId = " + eventId;
+//     let sqlOkPacket = await doQuery(query);
 
-    return sqlOkPacket.changedRows === 1;
-}
+//     return sqlOkPacket.changedRows === 1;
+// }
 
 async function updateEventDesc(eventId, newDescText){
     const query = "UPDATE " + EVENTS_DESC_TABLE + " SET descText = " + sqlStr(newDescText) + " WHERE eventId = " + eventId;
@@ -519,9 +521,10 @@ async function getEventDesc(eventId){
 }
 
 function fillInsertEventQuery(event) {
-    const query = "INSERT INTO " + EVENTS_TABLE + " (name, address, eventType, startDate, endDate, startTime, endTime, dateCreated, status) VALUES (" 
+    const query = "INSERT INTO " + EVENTS_TABLE + " (name, address, city, eventType, startDate, endDate, startTime, endTime, dateCreated, status) VALUES (" 
     + sqlStr(event.name) + "," 
     + sqlStr(event.address) + ","
+    + sqlStr(event.city) + ","
     + sqlStr(event.eventType) + ","
     + sqlStr(event.startDate) + ","
     + sqlStr(event.endDate) + ","
