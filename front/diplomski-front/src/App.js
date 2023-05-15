@@ -2,7 +2,7 @@
 import './App.css';
 import {BrowserRouter as Router, Route, Routes, Navigate, Outlet} from 'react-router-dom';
 import {Container, Navbar} from 'react-bootstrap'
-// import { RegistrationForm } from './components/forms/RegistrationForm';
+import { RegistrationForm } from './components/forms/RegistrationForm';
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import './assets/styles/style.css';
 // import RequestsList from './components/business/RequestsList';
@@ -10,21 +10,22 @@ import './assets/styles/style.css';
 // import CertificatesList from './components/business/CertificatesList';
 // import CertificatePreview from './components/business/CertificatePreview';
 import GuestNavbar from './layouts/GuestNavbar';
-import ClientNavbar from './layouts/ClientNavbar';
-// import { LoginForm } from './components/forms/LoginForm';
+import PhysicalNavbar from './layouts/PhysicalNavbar';
+import { LoginForm } from './components/forms/LoginForm';
 // import AdminFirstPage from './components/business/AdminFirstPage';
 // import ClientFirstPage from './components/business/ClientFirstPage';
 import LogoutPage from './layouts/LogoutPage';
 import UnavailablePage from './components/business/UnavailablePage';
 import { useEffect, useState } from 'react';
+import BusinessNavbar from './layouts/BusinessNavbar';
 // import UserObjectsList from './components/business/UserObjectsList';
 // import AllObjectsList from './components/business/AllObjectsList';
 // import { CreateObjectForm } from './components/forms/CreateObjectForm';
 import { getRole } from './services/utils/AuthService';
 
 function App() {
-  // const registrationForm = <Container><RegistrationForm /></Container>
-  // const loginForm = <Container><LoginForm /></Container>
+  const registrationForm = <Container><RegistrationForm /></Container>
+  const loginForm = <Container><LoginForm /></Container>
   // const requestsList = <Container><RequestsList /></Container>
   // const requestPreview = <Container><RequestPreview /></Container>
   // const certificatesList = <Container><CertificatesList /></Container>
@@ -46,8 +47,10 @@ function App() {
   function getNavbarByUserRole(){
     let userRole = getRole();
 
-    if(userRole === "client"){
-      return <ClientNavbar />;
+    if(userRole === "PHYSICAL"){
+      return <PhysicalNavbar />;
+    } else if(userRole === "BUSINESS"){
+      return <BusinessNavbar />;
     }
     else{
       return <GuestNavbar />;
@@ -58,10 +61,10 @@ function App() {
               {navBar}
               <Routes>
                 <Route path="" >
-                  {/* <Route path="/register" element={registrationForm} />
+                  <Route path="/register" element={registrationForm} />
                   <Route path="/login" element={loginForm} />
                   <Route path="/logout" element={logoutPage} />
-                  <Route path='/client' element={clientFirstPage} /> */}
+                  {/* <Route path='/client' element={clientFirstPage} /> */}
 
                   {/*<Route path='/admin/certificates/:id' element={certificatePreview}/> {/* preview, validate, remove - 6, 7, 8*/}
                   {/*<Route path='/admin/certificates' element={certificatesList}/> {/* list all, button for detailed view - 5 */}

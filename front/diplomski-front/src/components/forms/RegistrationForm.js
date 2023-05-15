@@ -5,19 +5,17 @@ import { sendRegistrationRequest } from '../../services/api/LoginApi';
 import LabeledInput from './LabeledInput';
 import '../../assets/styles/buttons.css';
 import { useNavigate  } from "react-router-dom";  
+import { getRole } from '../../services/utils/AuthService';
 
 export function RegistrationForm() {
-    const [givenName, setName] = useState("");
-    const [surname, setLastame] = useState("");
+    const [name, setName] = useState("");
+    const [lastname, setLastname] = useState("");
+    const [isBusiness, setIsBusiness] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [retypedPassword, setRetypedPassword] = useState("");
-    const [organization, setOrganization] = useState("");
-    const [orgUnit, setOrgUnit] = useState("");
-    const [country, setCountry] = useState("");
-    const [owner, setIsOwner] = useState(false);
 
-    const userRole = sessionStorage.getItem("userRole");
+    const userRole = getRole();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -36,15 +34,12 @@ export function RegistrationForm() {
     }
 
     const validateInput = () => {
-      let valid = (checkLettersInput(givenName) && givenName.length > 0 ) && 
-                  (checkLettersInput(surname) && surname.length > 0 ) && 
+      let valid = (checkLettersInput(name) && name.length > 0 ) && 
+                  (checkLettersInput(lastname) && lastname.length > 0 ) && 
                   (checkEmailInput(email) && email.length > 0 ) && 
-                  (checkPasswordInput(password) && password.length >= 12 ) && 
-                  password === retypedPassword &&
-                  organization.length > 0 &&
-                  orgUnit.length > 0 &&
-                  (checkLettersInput(country) && country.length > 0 )
-                  ;
+                  (checkPasswordInput(password) && password.length >= 6 ) && 
+                  password === retypedPassword
+                  ; 
 
       return valid;
     }
@@ -52,17 +47,18 @@ export function RegistrationForm() {
     const postRegistrationRequest = useCallback(
         (e) => {
             e.preventDefault();
-            const userJson = {givenName, surname, email, password, organization, orgUnit, country, owner}
+            const userJson = {name, lastname, email, password, isBusiness}
             // console.log(userJson)
             sendRegistrationRequest(userJson).then(
                 (response) => {
                     console.log(response);
-                    alert("Thank you for registering! Check your email often for further steps.");
+                    alert("Thank you for registering!.");
+                    navigate("/login");
                 }, (error) => {
                   console.log(error);
                 }
             );
-        }, [givenName, surname, email, password, organization, orgUnit, country, owner]
+        }, [name, lastname, email, password, isBusiness, navigate]
     )
 
     return (<>
@@ -79,27 +75,25 @@ export function RegistrationForm() {
                         <Col sm={4}/>
                   </Row> 
 
-                  <LabeledInput value={givenName} label="Name" inputName="name" placeholder="Type your name" required onChangeFunc={setName}/>
-                  <LabeledInput value={surname} label="Last name" inputName="lastname" placeholder="Type your lastname" required onChangeFunc={setLastame}/>
-                  <LabeledInput value={email} label="Email" inputName="email" placeholder="Type your email" required onChangeFunc={setEmail}/>
-                  <LabeledInput value={password} label="Password" inputName="password" placeholder="Type your password" required onChangeFunc={setPassword}/>
-                  <LabeledInput value={retypedPassword} label="Retyped Password" inputName="retypedPassword" placeholder="Retype your password" required onChangeFunc={setRetypedPassword}/>
-                  <LabeledInput value={organization} label="Organization" inputName="organization" placeholder="Type your organization" required onChangeFunc={setOrganization}/>
-                  <LabeledInput value={orgUnit} label="Organizational Unit" inputName="orgUnit" placeholder="Type your organizational unit" required onChangeFunc={setOrgUnit}/>
-                  <LabeledInput value={country} label="Country" inputName="country" placeholder="Type your country" required onChangeFunc={setCountry}/>
+                  <LabeledInput value={name} label="Name" inputName="name" placeholder="Type your name" required onChangeFunc={setName}/>
+                  <LabeledInput value={lastname} label="Last name" inputName="lastname" placeholder="Type your lastname" required onChangeFunc={setLastname}/>
                   
                   <Row className='mt-2'>
                         <Col sm={4}/>
                         <Col sm={4} align='center'>
                         <Form.Check 
                             type="checkbox"
-                            label="Are you the owner of the property?"
-                            checked={owner}
-                            onChange={(e) => setIsOwner(e.target.checked)}
+                            label="Are you a business?"
+                            checked={isBusiness}
+                            onChange={(e) => setIsBusiness(e.target.checked)}
                           />
                         </Col>
                         <Col sm={4}/>
                   </Row> 
+                  
+                  <LabeledInput value={email} label="Email" inputName="email" placeholder="Type your email" required onChangeFunc={setEmail}/>
+                  <LabeledInput value={password} label="Password" inputName="password" placeholder="Type your password" required onChangeFunc={setPassword}/>
+                  <LabeledInput value={retypedPassword} label="Retyped Password" inputName="retypedPassword" placeholder="Retype your password" required onChangeFunc={setRetypedPassword}/>
 
                   <Row className='mt-2'>
                         <Col sm={4}/>

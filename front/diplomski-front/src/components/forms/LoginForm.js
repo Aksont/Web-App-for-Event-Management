@@ -9,14 +9,12 @@ import { setToken, getToken } from '../../services/utils/AuthService';
 import { getRole } from '../../services/utils/AuthService';
 
 export function LoginForm() {
-    
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [pin, setPin] = useState("");
 
     const navigate = useNavigate ();
-    const userRole = sessionStorage.getItem("userRole");
+    const userRole = getRole();
 
     useEffect(() => {
         if(!!userRole){
@@ -35,8 +33,7 @@ export function LoginForm() {
 
     const validateInput = () => {
       let valid = (checkEmailInput(email) && email.length > 0 ) && 
-                  password.length > 0 && 
-                  pin.length > 0 
+                  password.length > 0
                   ;
 
       return valid;
@@ -45,28 +42,30 @@ export function LoginForm() {
     const postLoginRequest = useCallback(
         (e) => {
             e.preventDefault();
-            const userJson = {email, password, pin}
+            const userJson = {email, password}
             console.log(userJson)
 
             sendLoginRequest(userJson).then(
                 (response) => {
                     console.log(response);
-                    const token = response.data.jwt;
-                    console.log(token);
 
-                    setToken(token)
+                    sessionStorage.setItem("email", response.email);
+                    sessionStorage.setItem("role", response.role);
+                    // const token = response.data.jwt;
+                    // console.log(token);
+
+                    // setToken(token)
 
                     let userRole = getRole();
-                    // sessionStorage.setItem("userRole", userRole);
 
                     navigate("/" + userRole.toLowerCase());
-                    window.dispatchEvent(new Event("userRoleUpdated"));
+                    window.dispatchEvent(new Event("userUpdated"));
                     return response;
                 }, (error) => {
                   console.log(error);
                 }
             );
-        }, [email, password, pin]
+        }, [email, password, navigate]
     )
 
     return (<>
@@ -84,7 +83,6 @@ export function LoginForm() {
                         </Row> 
                         <LabeledInput value={email} label="Email" inputName="email" placeholder="Type your email" required onChangeFunc={setEmail}/>
                         <LabeledInput value={password} label="Password" inputName="password" placeholder="Type your password" required onChangeFunc={setPassword}/>
-                        <LabeledInput value={pin} label="Pin" inputName="password" placeholder="Type your PIN" required onChangeFunc={setPin}/>
     
                         <Row className='mt-2'>
                             <Col sm={4}/>

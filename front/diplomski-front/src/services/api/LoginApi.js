@@ -1,7 +1,7 @@
 import { getApiCall, getApiCallUrlEncoded } from "../Configs.js";
 
 
-// export async function sendRegistrationRequest(regRequest){
+export async function sendRegistrationRequest(regRequest){
 //     try {
 //         const responseData = await getApiCall().post(`/csr/request`, regRequest);
 //         return responseData;
@@ -9,9 +9,9 @@ import { getApiCall, getApiCallUrlEncoded } from "../Configs.js";
 //         console.log(err.message);
 //         return err.message
 //     }
-// }
+}
 
-// export async function sendLoginRequest(userJson){
+export async function sendLoginRequest(userJson){
 //     try {
 //         // let fd = new FormData();
 //         var fd = new URLSearchParams();
@@ -25,7 +25,7 @@ import { getApiCall, getApiCallUrlEncoded } from "../Configs.js";
 //         console.log(err.message);
 //         return err.message
 //     }
-// }
+}
 
 export async function sendLogoutRequest(){
     try {
