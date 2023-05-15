@@ -2,6 +2,7 @@ const express = require('express');
 const mysql = require('mysql');
 const app = express();
 
+
 const USERS_TABLE = "users";
 const USERS_BIO_TABLE = "users_bio";
 

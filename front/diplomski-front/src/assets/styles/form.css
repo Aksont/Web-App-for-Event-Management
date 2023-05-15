@@ -1,0 +1,52 @@
+/* .formButton {
+    background-color: var(--dark-blue) !important;
+    color: white !important;
+    font-size: x-large !important;
+  }
+
+.formButton:hover {
+    background-color: var(--hovered-blue) !important;
+    
+  }
+
+.errorLabel {
+  color: var(--dark-blue) !important;
+}
+
+.inputLabel{
+  font-size: 105%;
+}
+
+
+.info {
+  color: var(--dark-blue) !important;
+}
+
+.myFormControl {
+  border-color: var(--dutch-orange) !important;
+  box-shadow: inset 0 0.5px 0.5px rgba(0, 0, 0, 0.075), 0 0 5px rgba(255, 0, 0, 0.6) !important; 
+}
+
+
+[data-title]:hover:after {
+  opacity: 1;
+  transition: all 0.1s ease 0.5s;
+  visibility: visible;
+}
+[data-title]:after {
+  border-radius: 1rem;
+  content: attr(data-title);
+  background-color: white;
+  color: #111;
+  font-size: 103%;
+  position: absolute;
+  left: 50%;
+  white-space: nowrap;
+  box-shadow: 1px 1px 3px #222222;
+  border: 1px solid var(--dark-blue);
+  visibility: hidden;
+}
+  
+[data-title] {
+  position: relative;
+} */

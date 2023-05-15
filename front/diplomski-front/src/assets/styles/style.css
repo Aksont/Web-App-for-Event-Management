@@ -1,0 +1,94 @@
+:root {
+  --text: var(--dutch-orange);
+  --background: var(--dutch-orange);
+  
+  --orange-trans: #ff7700;
+  --custom-dark-grey: rgba(0,0,0,.5);
+
+  --dark-blue: #5da4b4;
+  --hovered-blue: #69bbcd;
+  --dutch-orange: #bd7554;
+  --darker-light-grey: #DDDDDD;
+  --ligher-grey: #EEEEEE;
+}
+
+body {
+  background-color: var(--ligher-grey) !important;
+}
+
+* {
+  font-family: Gill Sans,Gill Sans MT,Calibri,sans-serif; 
+  font-size: large;
+}
+
+img.profile_picture  {
+    max-height: 30px;
+    width: auto;
+    border-radius: 50%;
+  }
+
+
+  /* Orange */
+.search_btn {
+    color: var(--text);
+  }
+  
+.search_btn:hover {
+    background: var(--text) !important; 
+    color: rgb(22, 28, 45) !important;
+  }
+
+  .btn:focus,.btn:active {
+    outline: none !important;
+    box-shadow: none;
+ }
+
+ .navLink:focus{
+    color: var(--text) !important;
+ }
+
+ .searchField:focus{
+    outline: none !important;
+    box-shadow: none !important;
+ }
+
+ .searchBox {
+  background-color: white;
+  border: var(--text);
+  border-style: solid ;
+  border-width: thin;
+  border-radius: 1rem;
+}
+
+#showAllUsersAdminButton:hover{
+  text-decoration: underline;
+}
+
+.bg-darkBlue {
+  background-color: var(--dark-blue);
+}
+
+
+.borderedBlock {
+  background-color: white;
+  border-radius: 1.5rem;
+  border: solid 3px var(--dark-blue);
+  box-shadow: 0 0 5px var(--custom-dark-grey);
+  box-shadow: inset;
+  padding: 25px;
+}
+
+.borderedBlockNoShadow {
+  background-color: white;
+  border-radius: 1.5rem;
+  border: solid 3px var(--dark-blue);
+  padding: 25px;
+}
+
+.pagination>li>a:focus {
+  background-color:var(--dark-blue) !important;
+}
+
+.pagination>li>a:active {
+  background-color:var(--dark-blue) !important;
+}

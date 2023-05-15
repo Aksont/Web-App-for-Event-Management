@@ -1,0 +1,54 @@
+.navbar {
+  transition: .5s all;
+  margin-top: 0px;
+  padding: 0px !important;
+  padding-right: 50px !important;
+}
+
+.navbar img {
+  margin-top: 0;
+  margin-left: 3px;
+  width: 80%;
+}
+
+img.brand {
+  max-height: 50px;
+  width: auto;
+}
+
+.nav-link {
+  color: white !important;
+}
+
+.nav-link:hover {
+  border-top: solid 2px white;
+  border-left: 0;
+  transition: var(--transition);
+}
+
+@media only screen and (max-width: 767px) {
+  .nav-link:hover {
+    border-top: 0;
+    border-left: solid 2px white;
+  }
+}
+
+.dropdown-menu{
+  padding-left: 5px;
+}
+
+.dropdown-menu.show{
+  color: white;
+  background-color: var(--dark-blue);
+  margin-left: 5px;
+}
+
+.dropdown-item {
+  color: white !important;
+}
+
+.dropdown-item:hover {
+  transition: var(--transition);
+  border-left: solid 3px white;
+  background-color: var(--dark-blue) !important;
+}

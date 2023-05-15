@@ -1,0 +1,84 @@
+
+.formButton {
+    background-color: var(--dark-blue) !important;
+    color: white !important;
+    font-size: x-large !important;
+  }
+
+.formButton:hover {
+    background-color: var(--hovered-blue) !important;
+    
+  }
+
+.fixedWidthButton {
+    width: 150px !important;
+}
+
+.minusMarginButton {
+  margin-top: -50px !important;
+}
+
+.alertFixedWidthButton {
+  width: 250px !important;
+  background-color: indianred!important;
+}
+.alertFixedWidthButton:hover {
+  background-color: crimson !important;
+}
+
+.onRight {
+  float: right !important;
+}
+
+.acceptReqReq {
+  width: 80% !important;
+  text-align: center;
+
+}
+
+.commentBtn {
+  width: 100% !important;
+  text-align: center;
+  font-size: large !important;
+}
+
+.declineButton {
+  background-color: white !important;
+  color: var(--dark-blue) !important;
+  border-color: var(--dark-blue) !important;
+  font-size: x-large !important;
+}
+
+.declineButton:hover {
+  background-color: var(--hovered-blue) !important;
+  
+}
+
+.faButtons {
+  color: var(--dark-blue);
+  font-size:xx-large;
+  margin-right: 5px;
+}
+
+.faButtons:hover {
+  color: var(--hovered-blue);
+  cursor: pointer;
+}
+
+
+.faRadio + i {
+  position:relative;
+  color: #B1B1B1;
+}
+.faRadio:hover {
+  color: var(--hovered-blue);
+  cursor: pointer;
+}
+
+.faRadio:checked{
+  color: var(--dark-blue);
+}
+
+input[type='radio']:checked + i{
+  color: var(--dark-blue);
+}

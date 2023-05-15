@@ -49,6 +49,7 @@ class EventResponse {
         this.mainOrganizator = null;  //TODO
         this.organizers = []; //TODO
         this.performers = []; //TODO
+        this.eventDescText = "";
     }
 }
 
@@ -71,9 +72,14 @@ function createEventDTO(data) {
     return u;
 }
 
-function createEventResponse(event) {
+async function createEventResponse(event) {
     //TODO add mainOrganizator, organizers, performers
     let u = new EventResponse(event.id, event.name, event.address, event.eventType, event.startDate, event.endDate, event.startTime, event.endTime, event.dateCreated, event.status);
+    let eventDesc = await getEventDesc(event.id);
+
+    if (eventDesc){
+        u.eventDescText = eventDesc.descText;
+    }
 
     return u;
 }
@@ -154,7 +160,7 @@ app.get('/', (req, res) => {
     res.status(200).send(message);
 })
 
-app.get("/event-id/:id", async (req, res) => {
+app.get("/event/:id", async (req, res) => {
     const id = req.params.id;
     let event = await getEvent(id);
 
@@ -162,7 +168,9 @@ app.get("/event-id/:id", async (req, res) => {
         res.status(404).send("No event with such ID was found.");
     }
 
-    res.json(createEventResponse(event));
+    let eventResponse = await createEventResponse(event);
+
+    res.json(eventResponse);
 })
 
 app.post("/create-event", async (req, res) => {
@@ -186,7 +194,7 @@ app.post("/create-event", async (req, res) => {
     res.json(createEventResponse(newEvent));
 })
 
-app.delete("/delete-event/:id", async (req, res) => {
+app.delete("/event/:id", async (req, res) => {
     const id = req.params.id;
     let event = await getEvent(id);
 
@@ -204,15 +212,17 @@ app.delete("/delete-event/:id", async (req, res) => {
     }
 })
 
-app.post("/update-description/:id", async (req, res) => {
+app.post("/description/:id", async (req, res) => {
     const newDescText = req.body.descText;
-    console.log(req.body)
-    console.log(newDescText);
     const id = req.params.id;
     let event = await getEvent(id);
 
     if (event === null){
         res.status(404).send("No event with such ID was found.");
+    }
+
+    if (!newDescText){
+        res.status(409).send("Error with new description."); 
     }
 
     let isOkay = await addEventDesc(event.id, newDescText);
@@ -229,11 +239,15 @@ app.get("/price/:id", async (req, res) => {
     const id = req.params.id;
     let event = await getEvent(id);
 
+    console.log(event);
+
     if (event === null){
         res.status(404).send("No event with such ID was found.");
     }
 
     let price = await getEventPrice(id);
+
+    console.log(price);
 
     res.json(price.price);
 })
@@ -249,15 +263,15 @@ app.post("/price/:eventId", async (req, res) => {
 
     let oldPrice = await getEventPrice(id);
 
-    if (oldPrice){
+    if (!!oldPrice){
         deactivateOldPrice(oldPrice.id);
     }
 
-    addEventPrice(id, newPrice);
+    await addEventPrice(id, newPrice);
     res.send("Successfully updated event price");
 })
 
-app.get("/get-roles/:userId/:eventId", async (req, res) => {
+app.get("/user-roles-for-event/:userId/:eventId", async (req, res) => {
     const userId = req.params.userId;
     const eventId = req.params.eventId;
 
@@ -372,7 +386,7 @@ async function addEventPrice(eventId, price){
     + sqlStr(price) + "," 
     + sqlStr("ACTIVE") + ","
     + sqlStr(getTodayDate())
-    ")";
+    + ")";
 
     let sqlOkPacket = await doQuery(query);
 
@@ -437,7 +451,12 @@ async function doesAlreadyHaveSuchRole(userId, eventId, role){
 }
 
 async function getRoles(userId, eventId){
-    const query = "SELECT * FROM " + USER_EVENT_ROLES_TABLE + " WHERE userId = " + userId + " AND eventId = " + eventId + " status = " + sqlStr("ACTIVE") ;
+    const query = "SELECT * FROM " + USER_EVENT_ROLES_TABLE 
+                + " WHERE userId = " + userId 
+                + " AND eventId = " + eventId 
+                + " AND status = " + sqlStr("ACTIVE")
+                ;
+    
     let roles = []
     let results = await doQuery(query);
 
