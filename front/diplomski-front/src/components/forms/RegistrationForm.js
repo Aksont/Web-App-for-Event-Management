@@ -1,11 +1,11 @@
 import {useState, useEffect, useRef, useCallback} from 'react';
 import {checkLettersInput, checkEmailInput, checkPasswordInput } from '../../services/utils/InputValidation';
 import { Form, Button, Container, Col, Row} from 'react-bootstrap';
-import { sendRegistrationRequest } from '../../services/api/LoginApi';
+import { sendRegistrationRequest } from '../../services/api/UserApi';
 import LabeledInput from './LabeledInput';
 import '../../assets/styles/buttons.css';
 import { useNavigate  } from "react-router-dom";  
-import { getRole } from '../../services/utils/AuthService';
+import { getUserType } from '../../services/utils/AuthService';
 
 export function RegistrationForm() {
     const [name, setName] = useState("");
@@ -15,20 +15,19 @@ export function RegistrationForm() {
     const [password, setPassword] = useState("");
     const [retypedPassword, setRetypedPassword] = useState("");
 
-    const userRole = getRole();
+    // const userRole = getRole();
     const navigate = useNavigate();
 
-    useEffect(() => {
-        if(!!userRole){
-            navigate("/" + userRole.toLowerCase());
-        }
-    }, [navigate, userRole])
+    // useEffect(() => {
+    //     if(!!userRole){
+    //         navigate("/" + userRole.toLowerCase());
+    //     }
+    // }, [navigate, userRole])
 
     const registerButtonPressed = (e) => {
       if (validateInput()) {
         postRegistrationRequest(e);
       } else {
-        console.log("Invalid input")
         alert("Invalid input")
       }
     }
@@ -37,7 +36,7 @@ export function RegistrationForm() {
       let valid = (checkLettersInput(name) && name.length > 0 ) && 
                   (checkLettersInput(lastname) && lastname.length > 0 ) && 
                   (checkEmailInput(email) && email.length > 0 ) && 
-                  (checkPasswordInput(password) && password.length >= 6 ) && 
+                  (checkPasswordInput(password) && password.length >= 8 ) && 
                   password === retypedPassword
                   ; 
 
@@ -47,15 +46,19 @@ export function RegistrationForm() {
     const postRegistrationRequest = useCallback(
         (e) => {
             e.preventDefault();
-            const userJson = {name, lastname, email, password, isBusiness}
-            // console.log(userJson)
+
+            let userType = "PHYSICAL";
+            if (isBusiness){
+              userType = "BUSINESS";
+            }
+            const userJson = {name, lastname, email, password, userType}
+
             sendRegistrationRequest(userJson).then(
                 (response) => {
-                    console.log(response);
                     alert("Thank you for registering!.");
                     navigate("/login");
                 }, (error) => {
-                  console.log(error);
+                  alert("Error with the registration.");
                 }
             );
         }, [name, lastname, email, password, isBusiness, navigate]

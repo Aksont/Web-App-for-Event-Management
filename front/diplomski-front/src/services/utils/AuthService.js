@@ -34,8 +34,8 @@ export const removeToken = () => {
   return sessionStorage.removeItem("jwt");
 }
 
-export const getRole = () => {
-  let role = sessionStorage.getItem("role");
+export const getUserType = () => {
+  let role = sessionStorage.getItem("userType");
 
   return role;
 }

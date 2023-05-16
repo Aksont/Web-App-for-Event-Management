@@ -1,15 +1,18 @@
 import {useState, useEffect, useRef, useCallback} from 'react';
-import {checkLettersInput, checkEmailInput, checkPasswordInput } from '../../services/utils/InputValidation';
+import {checkLettersInput, checkEmailInput, checkPasswordInput, checkDateInput, isHhMm } from '../../services/utils/InputValidation';
 import { Form, Button, Container, Col, Row} from 'react-bootstrap';
-import { sendRegistrationRequest } from '../../services/api/LoginApi';
+import { sendRegistrationRequest } from '../../services/api/UserApi';
 import LabeledInput from './LabeledInput';
 import '../../assets/styles/buttons.css';
 import { useNavigate  } from "react-router-dom";  
-import { getRole } from '../../services/utils/AuthService';
+import { getUserType } from '../../services/utils/AuthService';
 import LabeledTextarea from './LabeledTextarea';
+import { isPositiveNumber } from '../../services/utils/InputValidation';
+import { sendEventCreationRequest } from '../../services/api/EventApi';
 
 export function CreateEventForm() {
    
+    const navigate = useNavigate();
     const possibleEventTypes = ["MUSIC", "NATURE", "EDUCATION", "OTHER"];
    
     // name, address, city, eventType, startDate, endDate, startTime, endTime, status, dateCreated
@@ -25,11 +28,8 @@ export function CreateEventForm() {
     const [price, setPrice] = useState("");
 
     const createButtonPressed = (e) => {
-        console.log(eventType)
-
       if (validateInput()) {
-        
-        // postRegistrationRequest(e);
+        postEventCreationRequest(e);
       } else {
         console.log("Invalid input")
         alert("Invalid input")
@@ -37,15 +37,30 @@ export function CreateEventForm() {
     }
 
     const validateInput = () => {
-      let valid = name.length > 0  && 
+        // console.log("=====")
+        // console.log(name.length > 0);
+        // console.log(address.length > 0);
+        // console.log(city.length > 0 && checkLettersInput(city));
+        // console.log(!!eventType);
+        // console.log(checkDateInput(startDate));
+        // console.log(checkDateInput(endDate));
+        // console.log(isHhMm(startTime));
+        // console.log(isHhMm(endTime));
+        // console.log(price.length > 0 && isPositiveNumber(price));
+        // console.log("=====")
+
+      let valid = name.length > 0 && 
                   address.length > 0 && 
-                  city.length > 0 && 
+                  city.length > 0 && checkLettersInput(city) &&
                   !!eventType && 
-                  !!startDate && 
-                  !!endDate && 
-                  !!startTime && 
-                  !!endTime
+                  checkDateInput(startDate) && 
+                  checkDateInput(endDate) && 
+                  isHhMm(startTime) && 
+                  isHhMm(endTime) &&
+                  price.length > 0 && isPositiveNumber(price)
                   ; 
+
+        // console.log(valid);
 
       return valid;
     }
@@ -54,22 +69,21 @@ export function CreateEventForm() {
         setEventType(e.target.value);
       };
 
-    // const postRegistrationRequest = useCallback(
-    //     (e) => {
-    //         e.preventDefault();
-    //         const userJson = {name, lastname, email, password, isBusiness}
-    //         // console.log(userJson)
-    //         sendRegistrationRequest(userJson).then(
-    //             (response) => {
-    //                 console.log(response);
-    //                 alert("Thank you for registering!.");
-    //                 navigate("/login");
-    //             }, (error) => {
-    //               console.log(error);
-    //             }
-    //         );
-    //     }, [name, lastname, email, password, isBusiness, navigate]
-    // )
+    const postEventCreationRequest = useCallback(
+        (e) => {
+            e.preventDefault();
+            const userJson = {name, address, city, eventType, startDate, endDate, startTime, endTime, price, description}
+            console.log(userJson)
+            sendEventCreationRequest(userJson).then(
+                (response) => {
+                    console.log(response);
+                    navigate("/login");
+                }, (error) => {
+                  console.log(error);
+                }
+            );
+        }, [name, address, city, eventType, startDate, endDate, startTime, endTime, price, description]
+    )
 
     return (<>
     <Row className='mt-5' >

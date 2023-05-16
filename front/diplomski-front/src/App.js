@@ -21,7 +21,7 @@ import BusinessNavbar from './layouts/BusinessNavbar';
 // import UserObjectsList from './components/business/UserObjectsList';
 // import AllObjectsList from './components/business/AllObjectsList';
 // import { CreateObjectForm } from './components/forms/CreateObjectForm';
-import { getRole } from './services/utils/AuthService';
+import { getUserType } from './services/utils/AuthService';
 import AdminNavbar from './layouts/AdminNavbar';
 import UnderConstructionPage from './components/business/UnderConstructionPage';
 import { CreateEventForm } from './components/forms/CreateEventForm';
@@ -45,20 +45,20 @@ function App() {
   // const allObjectsList = <Container><AllObjectsList /></Container>
   // const createObjectForm = <Container><CreateObjectForm /></Container>'
 
-  const [navBar, setNavBar] = useState(getNavbarByUserRole());
+  const [navBar, setNavBar] = useState(getNavbarByUserType());
 
-  window.addEventListener('userRoleUpdated', () => {
-    setNavBar(getNavbarByUserRole())
+  window.addEventListener('userUpdated', () => {
+    setNavBar(getNavbarByUserType())
   })
 
-  function getNavbarByUserRole(){
-    let userRole = getRole();
+  function getNavbarByUserType(){
+    let userType = getUserType();
 
-    if(userRole === "PHYSICAL"){
+    if(userType === "PHYSICAL"){
       return <PhysicalNavbar />;
-    } else if(userRole === "BUSINESS"){
+    } else if(userType === "BUSINESS"){
       return <BusinessNavbar />;
-    } else if(userRole === "ADMIN"){
+    } else if(userType === "ADMIN"){
       return <AdminNavbar />;
     } else{
       return <GuestNavbar />;

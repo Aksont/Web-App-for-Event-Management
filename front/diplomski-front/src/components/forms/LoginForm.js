@@ -1,12 +1,12 @@
 import {useState, useEffect, useRef, useCallback} from 'react';
 import {checkLettersInput, checkEmailInput, checkPasswordInput } from '../../services/utils/InputValidation';
 import { Form, Button, Container, Col, Row} from 'react-bootstrap';
-import { sendLoginRequest } from '../../services/api/LoginApi';
+import { sendLoginRequest } from '../../services/api/UserApi';
 import LabeledInput from './LabeledInput';
 import '../../assets/styles/buttons.css';
 import { useNavigate  } from "react-router-dom";    
 import { setToken, getToken } from '../../services/utils/AuthService';
-import { getRole } from '../../services/utils/AuthService';
+import { getUserType } from '../../services/utils/AuthService';
 
 export function LoginForm() {
 
@@ -14,13 +14,13 @@ export function LoginForm() {
     const [password, setPassword] = useState("");
 
     const navigate = useNavigate ();
-    const userRole = getRole();
+    // const userRole = getUserType();
 
-    useEffect(() => {
-        if(!!userRole){
-            navigate("/" + userRole.toLowerCase());
-        }
-    }, [navigate, userRole])
+    // useEffect(() => {
+    //     if(!!userRole){
+    //         navigate("/" + userRole.toLowerCase());
+    //     }
+    // }, [navigate, userRole])
 
     const loginButtonPressed = (e) => {
       if (validateInput()) {
@@ -49,20 +49,13 @@ export function LoginForm() {
                 (response) => {
                     console.log(response);
 
-                    sessionStorage.setItem("email", response.email);
-                    sessionStorage.setItem("role", response.role);
-                    // const token = response.data.jwt;
-                    // console.log(token);
+                    sessionStorage.setItem("email", response.data.email);
+                    sessionStorage.setItem("userType", response.data.userType);
 
-                    // setToken(token)
-
-                    let userRole = getRole();
-
-                    navigate("/" + userRole.toLowerCase());
                     window.dispatchEvent(new Event("userUpdated"));
-                    return response;
+                    navigate("/explore");
                 }, (error) => {
-                  console.log(error);
+                  alert("Invalid login");
                 }
             );
         }, [email, password, navigate]

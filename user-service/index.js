@@ -1,7 +1,9 @@
 const express = require('express');
 const mysql = require('mysql');
-const app = express();
+const cors = require("cors");
 
+const app = express();
+app.use(cors());
 
 const USERS_TABLE = "users";
 const USERS_BIO_TABLE = "users_bio";
@@ -50,6 +52,12 @@ function createUser(data) {
 //     return u;
 // }
 
+function createLoginDTO(data) {
+    let loginDTO = {"email":data.email, "password":data.password};
+
+    return loginDTO;
+}
+
 function createUserDTO(data) {
     let u = new UserDTO(data.name, data.lastname, data.userType, data.email, data.password);
 
@@ -89,6 +97,45 @@ function createUserBio(data) {
 //     return bio;
 // }
 
+app.post("/login", async (req, res) => {
+    let loginDTO = createLoginDTO(req.body);
+    let user = await getUserByEmail(loginDTO.email);
+
+    if (!!user && isPasswordCorrect(user, loginDTO)){
+        return res.json(createUserResponse(user));
+    }
+
+    return res.status(409).send("Wrong login.");
+})
+
+function isPasswordCorrect(user, loginDTO){
+    // TODO password hashing 
+    let isCorrect = user.password === loginDTO.password; 
+    
+    return isCorrect;
+}
+
+app.post("/register", async (req, res) => {
+    let userDTO = createUserDTO(req.body);
+    let user = await getUserByEmail(userDTO.email);
+    console.log(user)
+
+    if (!!user){
+        return res.status(409).send("Email is already in use.");
+    }
+
+    const query = fillInsertUserQuery(userDTO);
+    let sqlOkPacket = await doQuery(query); // sqlOkPacket is a return value when inserting/updating sql table
+    
+    if (!sqlOkPacket.insertId){
+        return res.status(400).send("Did not register new user.");
+    }
+
+    user = await getUserByEmail(userDTO.email);
+
+    return res.json(createUserResponse(user));
+})
+
 app.get('/', (req, res) => {
     let message = req.query.message || "user-service";
 
@@ -118,28 +165,6 @@ app.get("/user-email/:email", async (req, res) => {
         res.status(404).send("No user with such email was found.");
     }
 
-    res.json(createUserResponse(user));
-})
-
-app.post("/register", async (req, res) => {
-    let userDTO = createUserDTO(req.body);
-    let user = await getUserByEmail(userDTO.email);
-
-    if (user !== null){
-        res.status(409).send("Email is already in use.");
-    }
-
-    // user = createNewUser(userDTO);
-    // const query = fillInsertUserQuery(user);
-    const query = fillInsertUserQuery(userDTO);
-    let sqlOkPacket = await doQuery(query); // sqlOkPacket is a return value when inserting/updating sql table
-    
-    if (!sqlOkPacket.insertId){
-        res.status(400).send("Did not register new user.");
-    }
-
-    user = await getUserByEmail(userDTO.email);
-    console.log(user);
     res.json(createUserResponse(user));
 })
 

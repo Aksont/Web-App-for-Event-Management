@@ -35,14 +35,11 @@ export function checkSecondPasswordInput(input, password){
     return input === password
 }
 
-
 export function checkNumInput(input){
     return onlyNumbersRegex.test(input);     
 }
 
 export function checkDateInput(input){
-    console.log(input)
-    console.log(yyyyMMddRegex.test(input)   )
     input = removeSpaces(input)
     return yyyyMMddRegex.test(input);     
 }
@@ -51,9 +48,9 @@ export function isEmpty(input){
     if(input ===null || input === undefined || input ==='' ){
         return false;
     }
+
     return true;
 }
-
 
 function removeSpaces(input){
     return input.trim().split(/ +/).join(' ');
@@ -65,6 +62,24 @@ export function isPercentageNumber(input) {
 
 export function isPositiveNumber(input) {
     return validPositiveNumber.test(input); 
+}
+
+export function isHhMm(input) { // hh:mm
+    let valid = input.length === 5;
+    let splits = input.split(":");
+    valid = valid && splits.length === 2;
+    valid = valid && checkNumInput(splits[0]) && checkNumInput(splits[1]);
+
+    return valid;
+}
+
+export function isYyMmDd(input) { // yyyy-mm-dd
+    let valid = input.length === 10;
+    let splits = input.split("-");
+    valid = valid && splits.length === 3;
+    valid = isPositiveNumber(splits[0]) && isPositiveNumber(splits[1]) && isPositiveNumber(splits[2]);
+
+    return valid;
 }
 
 /*function capitalizeString(string) {
