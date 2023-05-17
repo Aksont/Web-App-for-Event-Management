@@ -98,7 +98,7 @@ export function CreateEventForm() {
                   console.log(error);
                 }
             );
-        }, [name, address, city, eventType, startDate, endDate, startTime, endTime, price, description, navigate]
+        }, [name, address, city, eventType, startDate, endDate, startTime, endTime, price, description]
     )
 
     return (<>

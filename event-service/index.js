@@ -182,6 +182,35 @@ app.get("/event/:id", async (req, res) => {
     return res.json(eventResponse);
 })
 
+app.get("/available-events", async (req, res) => {
+    const events = await getAvailableEvents();
+    let eventResponses = []
+
+    for (let e of events){
+        const eventResponse = await createEventResponse(e);
+        eventResponses.push(eventResponse);
+    }
+
+    return res.json(eventResponses);
+})
+
+app.get("/pending-events", async (req, res) => {
+    // TODO
+})
+
+app.get("/events/:email", async (req, res) => {
+    const email = req.params.email;
+    const events = await getUserEvents(email);
+    let eventResponses = []
+
+    for (let e of events){
+        const eventResponse = await createEventResponse(e);
+        eventResponses.push(eventResponse);
+    }
+
+    return res.json(eventResponses);
+})
+
 app.post("/create-event", async (req, res) => {
     const eventDTO = createEventDTO(req.body);
     
@@ -259,14 +288,14 @@ app.get("/price/:id", async (req, res) => {
     // console.log(event);
 
     if (event === null){
-        res.status(404).send("No event with such ID was found.");
+        return res.status(404).send("No event with such ID was found.");
     }
 
     let price = await getEventPrice(id);
 
     // console.log(price);
 
-    res.json(price.price);
+    return res.json(price.price);
 })
 
 app.post("/price/:eventId", async (req, res) => {
@@ -484,6 +513,42 @@ async function getEvent(id, status=""){
     }
 }
 
+async function getUserEvents(email){
+    let events = [];
+    const query = "SELECT * FROM " + EVENTS_TABLE + " WHERE organizerEmail = " + sqlStr(email);
+
+    let results = await doQuery(query);
+
+    if (!!results){
+        for (let i in results){
+            events.push(createEvent(results[i]))
+        }
+    }
+
+    return events;
+}
+
+async function getAvailableEvents(){
+    let events = [];
+    const query = "SELECT * FROM " + EVENTS_TABLE + " WHERE status = " + sqlStr("ACTIVE")
+                                                + " AND ("
+                                                + "(startDate > " + sqlStr(getTodayDate()) + ")"
+                                                + " OR "
+                                                + "(startDate = " + sqlStr(getTodayDate()) + " AND startTime > " + sqlStr(getCurrentTime()) + ")"
+                                                + ")"
+                                                ;
+
+    let results = await doQuery(query);
+
+    if (!!results){
+        for (let i in results){
+            events.push(createEvent(results[i]))
+        }
+    }
+
+    return events;
+}
+
 function getTodayDate(){
     let date_ob = new Date();
     // adjust 0 before single digit date
@@ -496,6 +561,16 @@ function getTodayDate(){
 
     return todaysDate;
 }
+
+function getCurrentTime() {
+    const currentTime = new Date();
+    const hours = String(currentTime.getHours()).padStart(2, '0');
+    const minutes = String(currentTime.getMinutes()).padStart(2, '0');
+
+    return `${hours}:${minutes}`;
+}
+  
+  // Get the current time
 
 async function deleteEvent(id){
     const query = "UPDATE " + EVENTS_TABLE + " SET status = " + sqlStr("DELETED") + " WHERE id = " + id;

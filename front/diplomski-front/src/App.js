@@ -25,6 +25,8 @@ import { getUserType } from './services/utils/AuthService';
 import AdminNavbar from './layouts/AdminNavbar';
 import UnderConstructionPage from './components/business/UnderConstructionPage';
 import { CreateEventForm } from './components/forms/CreateEventForm';
+import ExplorePage from './components/business/events/ExplorePage';
+import MyEventsPage from './components/business/events/MyEventsPage';
 
 function App() {
   const registrationForm = <Container><RegistrationForm /></Container>
@@ -41,6 +43,8 @@ function App() {
   // const adminFirstPage = <Container><AdminFirstPage /></Container>
   // const clientFirstPage = <Container><ClientFirstPage /></Container>
   const createEventForm = <Container><CreateEventForm /></Container>
+  const explorePage = <Container><ExplorePage /></Container>
+  const myEventsPage = <Container><MyEventsPage /></Container>
   // const userObjectsList = <Container><UserObjectsList /></Container>
   // const allObjectsList = <Container><AllObjectsList /></Container>
   // const createObjectForm = <Container><CreateObjectForm /></Container>'
@@ -72,14 +76,17 @@ function App() {
                   <Route path="/register" element={registrationForm} />
                   <Route path="/login" element={loginForm} />
                   <Route path="/logout" element={logoutPage} />
+                  <Route path="/unavailable" element={unavailablePage} />
 
-                  <Route path="/explore" element={underConstructionPage} />
+                  <Route path="/explore" element={explorePage} />
+                  <Route path="/explore/:id" element={underConstructionPage} />
 
                   <Route path="/business/organize" element={createEventForm} />
-                  <Route path="/business/my-events" element={underConstructionPage} />
+                  <Route path="/business/my-events" element={myEventsPage} />
                   <Route path="/business/settings" element={underConstructionPage} />
 
                   <Route path="/client/tickets" element={underConstructionPage} />
+                  <Route path="/client/visited-events" element={underConstructionPage} /> 
 
                   <Route path="/admin/events-to-approve" element={underConstructionPage} />
                   <Route path="/admin/reviews-to-approve" element={underConstructionPage} /> 
