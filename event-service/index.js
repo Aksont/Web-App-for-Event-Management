@@ -195,7 +195,15 @@ app.get("/available-events", async (req, res) => {
 })
 
 app.get("/pending-events", async (req, res) => {
-    // TODO
+    const events = await getPendingEvents();
+    let eventResponses = []
+
+    for (let e of events){
+        const eventResponse = await createEventResponse(e);
+        eventResponses.push(eventResponse);
+    }
+
+    return res.json(eventResponses);
 })
 
 app.get("/events/:email", async (req, res) => {
@@ -209,6 +217,44 @@ app.get("/events/:email", async (req, res) => {
     }
 
     return res.json(eventResponses);
+})
+
+app.put("/approve/:id", async (req, res) => {
+    const id = req.params.id;
+    let event = await getEvent(id);
+
+    if (!event){
+        return res.status(404).send("No event with such ID was found.");
+    }
+
+    let hasUpdated = await approveEvent(event.id);
+
+    if (hasUpdated){
+        event.status = "ACTIVE";
+        const eventResponse = await createEventResponse(event);
+        return res.json(eventResponse);
+    } else {
+        return res.status(409).send("Did not approve event.");
+    }
+})
+
+app.put("/deny/:id", async (req, res) => {
+    const id = req.params.id;
+    let event = await getEvent(id);
+
+    if (!event){
+        return res.status(404).send("No event with such ID was found.");
+    }
+
+    let hasUpdated = await denyEvent(event.id);
+
+    if (hasUpdated){
+        event.status = "DENIED";
+        const eventResponse = await createEventResponse(event);
+        return res.json(eventResponse);
+    } else {
+        return res.status(409).send("Did not deny event.");
+    }
 })
 
 app.post("/create-event", async (req, res) => {
@@ -513,6 +559,21 @@ async function getEvent(id, status=""){
     }
 }
 
+async function getPendingEvents(){
+    let events = [];
+    const query = "SELECT * FROM " + EVENTS_TABLE + " WHERE status = " + sqlStr("PENDING");
+
+    let results = await doQuery(query);
+
+    if (!!results){
+        for (let i in results){
+            events.push(createEvent(results[i]))
+        }
+    }
+
+    return events;
+}
+
 async function getUserEvents(email){
     let events = [];
     const query = "SELECT * FROM " + EVENTS_TABLE + " WHERE organizerEmail = " + sqlStr(email);
@@ -574,6 +635,20 @@ function getCurrentTime() {
 
 async function deleteEvent(id){
     const query = "UPDATE " + EVENTS_TABLE + " SET status = " + sqlStr("DELETED") + " WHERE id = " + id;
+    let sqlOkPacket = await doQuery(query);
+
+    return sqlOkPacket.changedRows === 1;
+}
+
+async function approveEvent(id){
+    const query = "UPDATE " + EVENTS_TABLE + " SET status = " + sqlStr("ACTIVE") + " WHERE id = " + id;
+    let sqlOkPacket = await doQuery(query);
+
+    return sqlOkPacket.changedRows === 1;
+}
+
+async function denyEvent(id){
+    const query = "UPDATE " + EVENTS_TABLE + " SET status = " + sqlStr("DENIED") + " WHERE id = " + id;
     let sqlOkPacket = await doQuery(query);
 
     return sqlOkPacket.changedRows === 1;

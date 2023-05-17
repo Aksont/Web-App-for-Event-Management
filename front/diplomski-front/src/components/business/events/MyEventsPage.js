@@ -16,9 +16,7 @@ export default function MyEventsPage(){
 
     useEffect(() => {
         let userEmail = getLoggedUserEmail();
-        if (!userEmail) {
-            userEmail = "info@coolevents.com";
-        }
+
         getUserEvents(userEmail).then(
             (response) => {
                 console.log(response)

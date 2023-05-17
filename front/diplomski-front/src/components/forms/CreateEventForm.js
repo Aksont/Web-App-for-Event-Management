@@ -58,7 +58,7 @@ export function CreateEventForm() {
                   checkDateInput(endDate) && 
                   isHhMm(startTime) && 
                   isHhMm(endTime) &&
-                  price.length > 0 && isPositiveNumber(price)
+                  (isPositiveNumber(price) || price === "0")
                   ; 
 
         // console.log(valid);

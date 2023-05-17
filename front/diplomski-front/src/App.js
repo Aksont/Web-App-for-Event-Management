@@ -27,6 +27,7 @@ import UnderConstructionPage from './components/business/UnderConstructionPage';
 import { CreateEventForm } from './components/forms/CreateEventForm';
 import ExplorePage from './components/business/events/ExplorePage';
 import MyEventsPage from './components/business/events/MyEventsPage';
+import PendingEventsPage from './components/business/events/PendingEventsPage';
 
 function App() {
   const registrationForm = <Container><RegistrationForm /></Container>
@@ -45,6 +46,7 @@ function App() {
   const createEventForm = <Container><CreateEventForm /></Container>
   const explorePage = <Container><ExplorePage /></Container>
   const myEventsPage = <Container><MyEventsPage /></Container>
+  const pendingEventsPage = <Container><PendingEventsPage /></Container>
   // const userObjectsList = <Container><UserObjectsList /></Container>
   // const allObjectsList = <Container><AllObjectsList /></Container>
   // const createObjectForm = <Container><CreateObjectForm /></Container>'
@@ -88,8 +90,8 @@ function App() {
                   <Route path="/client/tickets" element={underConstructionPage} />
                   <Route path="/client/visited-events" element={underConstructionPage} /> 
 
-                  <Route path="/admin/events-to-approve" element={underConstructionPage} />
-                  <Route path="/admin/reviews-to-approve" element={underConstructionPage} /> 
+                  <Route path="/admin/pending-events" element={pendingEventsPage} />
+                  <Route path="/admin/pending-reviews" element={underConstructionPage} /> 
 
                   <Route path="*" element={unavailablePage} />
                 </Route>

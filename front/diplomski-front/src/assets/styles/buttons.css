@@ -10,6 +10,28 @@
     
   }
 
+  .greenButton {
+    background-color: green !important;
+    color: white !important;
+    font-size: x-large !important;
+  }
+
+  .greenButton:hover {
+    background-color: lightgreen !important;
+    
+  }
+
+  .redButton {
+    background-color: red !important;
+    color: white !important;
+    font-size: x-large !important;
+  }
+
+  .redButton:hover {
+    background-color: lightcoral !important;
+    
+  }
+
 .fixedWidthButton {
     width: 150px !important;
 }

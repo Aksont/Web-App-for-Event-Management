@@ -44,3 +44,21 @@ export async function getActivePrice(id){
         throw new Error(err.message);
     }
 }
+
+export async function putApproveRequest(id){
+    try {
+        const responseData = await getEventApiCall().put(`/approve/` + id);
+        return responseData;
+    } catch (err) {
+        throw new Error(err.message);
+    }
+}
+
+export async function putDenyRequest(id){
+    try {
+        const responseData = await getEventApiCall().put(`/deny/` + id);
+        return responseData;
+    } catch (err) {
+        throw new Error(err.message);
+    }
+}
