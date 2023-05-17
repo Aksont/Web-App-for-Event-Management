@@ -1,10 +1,13 @@
 const express = require('express');
 const mysql = require('mysql');
+const cors = require("cors");
+
 const app = express();
+app.use(cors());
 
 const EVENTS_TABLE = "events";
 const EVENTS_DESC_TABLE = "events_desc";
-const USER_EVENT_ROLES_TABLE = "user_event_roles";
+// const USER_EVENT_ROLES_TABLE = "user_event_roles";
 const EVENT_PRICES_TABLE = "event_prices";
 
 class Event {
@@ -25,16 +28,18 @@ class Event {
 }
 
 class EventDTO {
-    constructor(organizerEmail, name, address, city, eventType, startDate, endDate, startTime, endTime) {
-        this.organizerEmail = organizerEmail;
-        this.name = name;
-        this.address = address;
-        this.city = city;
-        this.eventType = eventType;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.startTime = startTime;
-        this.endTime = endTime;
+    constructor(eventData) {
+        this.organizerEmail = eventData.organizerEmail;
+        this.name = eventData.name;
+        this.address = eventData.address;
+        this.city = eventData.city;
+        this.eventType = eventData.eventType;
+        this.startDate = eventData.startDate;
+        this.endDate = eventData.endDate;
+        this.startTime = eventData.startTime;
+        this.endTime = eventData.endTime;
+        this.price = eventData.price;
+        this.description = eventData.description;
     }
 }
 
@@ -63,25 +68,27 @@ function createEvent(data) {
 }
 
 function createNewEvent(data) {
-    console.log(data)
-    let e = new Event("", data.organizerEmail, data.name, data.address, data.city, data.eventType, data.startDate, data.endDate, data.startTime, data.endTime, getTodayDate());
+    // console.log(data)
+    let e = new Event("", data.organizerEmail, data.name, data.address, data.city.toLowerCase(), data.eventType, data.startDate, data.endDate, data.startTime, data.endTime, getTodayDate(), "PENDING");
 
     return e;
 }
 
 function createEventDTO(data) {
-    let u = new EventDTO(data.organizerEmail, data.name, data.address, data.city, data.eventType, data.startDate, data.endDate, data.startTime, data.endTime);
+    let u = new EventDTO(data);
 
     return u;
 }
 
 async function createEventResponse(event) {
-    let u = new EventResponse(event.id, event.organizerEmail, event.name, event.address, event.eventType, event.startDate, event.endDate, event.startTime, event.endTime, event.dateCreated, event.status);
+    let u = new EventResponse(event.id, event.organizerEmail, event.name, event.address, event.city, event.eventType, event.startDate, event.endDate, event.startTime, event.endTime, event.dateCreated, event.status);
     let eventDesc = await getEventDesc(event.id);
 
     if (eventDesc){
         u.eventDescText = eventDesc.descText;
     }
+
+    // console.log(u);
 
     return u;
 }
@@ -159,41 +166,49 @@ function createPrice(data) {
 app.get('/', (req, res) => {
     let message = req.query.message || "event-service";
 
-    res.status(200).send(message);
+    return res.status(200).send(message);
 })
 
 app.get("/event/:id", async (req, res) => {
     const id = req.params.id;
     let event = await getEvent(id);
 
-    if (event === null){
-        res.status(404).send("No event with such ID was found.");
+    if (!event){
+        return res.status(404).send("No event with such ID was found.");
     }
 
     let eventResponse = await createEventResponse(event);
 
-    res.json(eventResponse);
+    return res.json(eventResponse);
 })
 
 app.post("/create-event", async (req, res) => {
-    console.log(req.body)
-    console.log(req.body.name)
-    let eventDTO = createEventDTO(req.body);
+    const eventDTO = createEventDTO(req.body);
     
     if (!validateNewEventData(eventDTO)){
-        res.status(400).send("Invalid event data.");
+        return res.status(400).send("Invalid event data.");
     }
 
     let newEvent = createNewEvent(eventDTO);
-    let query = fillInsertEventQuery(newEvent);
-    let sqlOkPacket = await doQuery(query); // sqlOkPacket is a return value when inserting/updating sql table
-    
-    if (!sqlOkPacket.insertId){
-        res.status(400).send("Did not create new event.");
+    const query = fillInsertEventQuery(newEvent);
+    const sqlOkPacket = await doQuery(query); // sqlOkPacket is a return value when inserting/updating sql table
+    const eventId = sqlOkPacket.insertId;
+
+    if (!eventId){
+        return res.status(400).send("Did not create new event.");
     }
 
-    newEvent.id = sqlOkPacket.insertId;
-    res.json(createEventResponse(newEvent));
+    const isOkay = await addEventDesc(eventId, eventDTO.description);
+
+    if (!isOkay){
+        return res.status(409).send("Did not update description."); 
+    }
+
+    await addEventPrice(eventId, eventDTO.price);
+    newEvent.id = eventId;
+    const eventResponse = await createEventResponse(newEvent);
+
+    return res.json(eventResponse);
 })
 
 app.delete("/event/:id", async (req, res) => {
@@ -220,20 +235,20 @@ app.post("/description/:id", async (req, res) => {
     let event = await getEvent(id);
 
     if (event === null){
-        res.status(404).send("No event with such ID was found.");
+        return res.status(404).send("No event with such ID was found.");
     }
 
     if (!newDescText){
-        res.status(409).send("Error with new description."); 
+        return res.status(409).send("Error with new description."); 
     }
 
     let isOkay = await addEventDesc(event.id, newDescText);
 
     if (!isOkay){
-        res.status(409).send("Did not update description."); 
+        return res.status(409).send("Did not update description."); 
     }
     
-    res.send("Updated description successfully."); 
+    return res.send("Updated description successfully."); 
 
 })
 
@@ -241,7 +256,7 @@ app.get("/price/:id", async (req, res) => {
     const id = req.params.id;
     let event = await getEvent(id);
 
-    console.log(event);
+    // console.log(event);
 
     if (event === null){
         res.status(404).send("No event with such ID was found.");
@@ -249,7 +264,7 @@ app.get("/price/:id", async (req, res) => {
 
     let price = await getEventPrice(id);
 
-    console.log(price);
+    // console.log(price);
 
     res.json(price.price);
 })
@@ -355,13 +370,57 @@ app.get("/filter", async (req, res) => {
 })
 
 function validateNewEventData(eventDTO){
-    // TODO
-    // valid date
-    // start date today or after
-    // end date == start date or after
-    // if same date, end time after start time
-    return true;
+    try {
+        const todayDate = getTodayDate();
+        const startDate = parseDateFromString(eventDTO.startDate);
+        const endDate = parseDateFromString(eventDTO.endDate);
+
+        if (todayDate >= startDate){
+            return false;
+        } else if (startDate > endDate) {
+            return false;
+        } else if (startDate === endDate){
+            const startTime = parseTimeFromString(eventDTO.startTime);
+            const endTime = parseTimeFromString(eventDTO.startTime);
+
+            if (!validateTime(startDate) || !validateTime(endTime)){
+                return false
+            }
+            else if (startTime >= endTime){
+                return false;
+            }
+        }
+
+        return true;
+    } catch (error) {
+        return false;
+    }
 }
+
+function parseDateFromString(dateString) {
+    const [year, month, day] = dateString.split('-').map(Number);
+    
+    return new Date(year, month - 1, day);
+}
+
+function parseTimeFromString(timeString) {
+    const [hours, minutes] = timeString.split(':').map(Number);
+
+    return { hours, minutes };
+  }
+
+function validateTime(time) {
+    const hours = time.hours;
+    const minutes = time.minutes;
+
+    if (hours > 23 || hours < 0){
+        return false;
+    } else if (minutes > 59 || minutes < 0){
+        return false;
+    }
+
+    return true;
+  }
 
 async function getEventPrice(eventId){
     const query = "SELECT * FROM " + EVENT_PRICES_TABLE + " WHERE eventId = " + eventId + " AND status = " + sqlStr("ACTIVE") ;
@@ -395,8 +454,26 @@ async function addEventPrice(eventId, price){
     return sqlOkPacket.insertId !== null && sqlOkPacket.insertId !== undefined;
 }
 
-async function getEvent(id){
-    const query = "SELECT * FROM " + EVENTS_TABLE + " WHERE id = " + id + " AND status = " + sqlStr("ACTIVE") ;
+async function getActiveEvent(id){
+    const e = await getEvent(id, "ACTIVE");
+    
+    return e;
+}
+
+async function getPendingEvent(id){
+    const e = await getEvent(id, "PENDING");
+    
+    return e;
+}
+
+async function getEvent(id, status=""){
+    let query;
+
+    if (status.length > 0) {
+        query = "SELECT * FROM " + EVENTS_TABLE + " WHERE id = " + id + " AND status = " + sqlStr(status) ;
+    } else {
+        query = "SELECT * FROM " + EVENTS_TABLE + " WHERE id = " + id;
+    }
 
     let results = await doQuery(query);
 
@@ -521,8 +598,9 @@ async function getEventDesc(eventId){
 }
 
 function fillInsertEventQuery(event) {
-    const query = "INSERT INTO " + EVENTS_TABLE + " (name, address, city, eventType, startDate, endDate, startTime, endTime, dateCreated, status) VALUES (" 
+    const query = "INSERT INTO " + EVENTS_TABLE + " (name, organizerEmail, address, city, eventType, startDate, endDate, startTime, endTime, dateCreated, status) VALUES (" 
     + sqlStr(event.name) + "," 
+    + sqlStr(event.organizerEmail) + ","
     + sqlStr(event.address) + ","
     + sqlStr(event.city) + ","
     + sqlStr(event.eventType) + ","

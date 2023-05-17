@@ -8,7 +8,7 @@ DROP TABLE events;
 DROP TABLE users;
 
 CREATE TABLE users (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(20), lastname VARCHAR(20), userType VARCHAR(10), email VARCHAR(40), status VARCHAR(10), password VARCHAR(20));
-CREATE TABLE events (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(30), address VARCHAR(50), eventType VARCHAR(15), startDate VARCHAR(10), endDate VARCHAR(10), startTime VARCHAR(5), endTime VARCHAR(5), status VARCHAR(10), dateCreated VARCHAR(10));
+CREATE TABLE events (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(30), organizerEmail VARCHAR(40), address VARCHAR(50), city VARCHAR(20), eventType VARCHAR(15), startDate VARCHAR(10), endDate VARCHAR(10), startTime VARCHAR(5), endTime VARCHAR(5), status VARCHAR(10), dateCreated VARCHAR(10));
 CREATE TABLE tickets (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, userId int, eventId int, count int, price double, paidByUserId int, status VARCHAR(10), usedCount int, boughtOnDate VARCHAR(10),
                             FOREIGN KEY (userId) REFERENCES users(id),
                             FOREIGN KEY (eventId) REFERENCES events(id),
@@ -35,11 +35,11 @@ INSERT INTO users_bio (userId, bioText)
             (5, 'I just like to go partying and I attend every event that is shared on this amazing Event platform. Thank you Eventer Team for showing me all those amazing events!'),
             (6, 'Motivational Talker, Life Coach, Entrepreneur, Educator');
 
-INSERT INTO events (name, address, city, eventType, startDate, endDate, startTime, endTime, status, dateCreated)
-    VALUES  ('2000s Fest', 'Novosadski sajam, Hajduk Veljkova', 'novi sad', 'MUSIC', '2023-03-28', '2023-03-29', '20:00', '03:00', 'ACTIVE', '2023-03-15'),
-            ('Topoya Fest', 'Poljoprivredna skola', 'backa topola', 'MUSIC', '2023-06-15', '2023-06-18', '19:00', '04:00', 'ACTIVE', '2023-03-05'),
-            ('Sunny day to enjoy', 'Caffe Gorski smesko', 'popovica', 'NATURE', '2023-07-05', '2023-07-05', '10:00', '18:00', 'ACTIVE', '2023-02-26'),
-            ('Entrepreneurship Workshop KG', 'Hotel Industrial', 'kragujevac', 'EDUCATION', '2023-02-19', '2023-02-29', '14:00', '12:00', 'ACTIVE', '2023-01-15');
+INSERT INTO events (name, organizerEmail, address, city, eventType, startDate, endDate, startTime, endTime, status, dateCreated)
+    VALUES  ('2000s Fest', 'info@coolevents.com', 'Novosadski sajam, Hajduk Veljkova', 'novi sad', 'MUSIC', '2023-03-28', '2023-03-29', '20:00', '03:00', 'ACTIVE', '2023-03-15'),
+            ('Topoya Fest', 'boza@gmail.com', 'Poljoprivredna skola', 'backa topola', 'MUSIC', '2023-06-15', '2023-06-18', '19:00', '04:00', 'ACTIVE', '2023-03-05'),
+            ('Sunny day to enjoy', 'boza@gmail.com', 'Caffe Gorski smesko', 'popovica', 'NATURE', '2023-07-05', '2023-07-05', '10:00', '18:00', 'ACTIVE', '2023-02-26'),
+            ('Entrepreneurship Workshop KG', 'boza@gmail.com', 'Hotel Industrial', 'kragujevac', 'EDUCATION', '2023-02-19', '2023-02-29', '14:00', '12:00', 'ACTIVE', '2023-01-15');
 
 INSERT INTO event_prices (eventId, price, status, dateCreated)
     VALUES  (1, 850.0, 'ACTIVE', '2023-03-14'),

@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npx functions-framework --target=appfunc --port=8090"
+    "start": "npx functions-framework --target=appfunc --port=8090",
+    "build": "react-scripts build"
   },
   "author": "",
   "license": "ISC",

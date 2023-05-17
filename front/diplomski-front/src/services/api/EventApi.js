@@ -1,12 +1,10 @@
-import { getApiCall, getApiCallUrlEncoded } from "../Configs.js";
+import { getApiCall, getApiCallUrlEncoded, getEventApiCall } from "../Configs.js";
 
-
-export async function sendEventCreationRequest(regRequest){
-//     try {
-//         const responseData = await getApiCall().post(`/csr/request`, regRequest);
-//         return responseData;
-//     } catch (err) {
-//         console.log(err.message);
-//         return err.message
-//     }
+export async function sendEventCreationRequest(eventDTO){
+    try {
+        const responseData = await getEventApiCall().post(`/create-event`, eventDTO);
+        return responseData;
+    } catch (err) {
+        throw new Error(err.message);
+    }
 }

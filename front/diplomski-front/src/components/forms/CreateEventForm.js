@@ -9,6 +9,7 @@ import { getUserType } from '../../services/utils/AuthService';
 import LabeledTextarea from './LabeledTextarea';
 import { isPositiveNumber } from '../../services/utils/InputValidation';
 import { sendEventCreationRequest } from '../../services/api/EventApi';
+import { getLoggedUserEmail } from '../../services/utils/AuthService';
 
 export function CreateEventForm() {
    
@@ -65,6 +66,19 @@ export function CreateEventForm() {
       return valid;
     }
 
+    const emptyFields = () => {
+        setName("");
+        setAddress("");
+        setCity("");
+        setEventType("MUSIC");
+        setStartDate("");
+        setEndDate("");
+        setStartTime("");
+        setEndTime("");
+        setPrice("");
+        setDescription("");
+    }
+
     const handleSelectEventType = (e) => {
         setEventType(e.target.value);
       };
@@ -72,17 +86,19 @@ export function CreateEventForm() {
     const postEventCreationRequest = useCallback(
         (e) => {
             e.preventDefault();
-            const userJson = {name, address, city, eventType, startDate, endDate, startTime, endTime, price, description}
+            const organizerEmail = getLoggedUserEmail();
+            const userJson = {organizerEmail, name, address, city, eventType, startDate, endDate, startTime, endTime, price, description}
             console.log(userJson)
             sendEventCreationRequest(userJson).then(
                 (response) => {
                     console.log(response);
-                    navigate("/login");
+                    alert("Event was successfully created and sent for approval.")
+                    emptyFields();
                 }, (error) => {
                   console.log(error);
                 }
             );
-        }, [name, address, city, eventType, startDate, endDate, startTime, endTime, price, description]
+        }, [name, address, city, eventType, startDate, endDate, startTime, endTime, price, description, navigate]
     )
 
     return (<>

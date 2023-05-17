@@ -2,6 +2,12 @@ import axios from 'axios'
 import { getToken, getTokenWithNoQuotes } from './utils/AuthService';
 
 export var getUserApiCall = () =>{
+    // return axios.create({
+    //     baseURL: "https://us-central1-diplomski-379607.cloudfunctions.net/user-service",
+    //     headers:  {
+    //                 "Content-Type": "application/json"}
+    // });
+
     return axios.create({
         baseURL: "http://localhost:8090",
         headers:  {
@@ -13,9 +19,19 @@ export var getUserApiCall = () =>{
 
 } 
 
+export var getEventApiCall = () =>{
+    // return axios.create({
+    //     baseURL: "https://us-central1-diplomski-379607.cloudfunctions.net/user-service",
+    //     headers:  {
+    //                 "Content-Type": "application/json"}
+    // });
 
-
-
+    return axios.create({
+        baseURL: "http://localhost:8091",
+        headers:  {
+                    "Content-Type": "application/json"}
+    });
+} 
 
 export var getApiCall = () =>{
     return axios.create({
