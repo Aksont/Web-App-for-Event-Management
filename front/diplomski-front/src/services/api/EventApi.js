@@ -1,8 +1,17 @@
-import { getApiCall, getApiCallUrlEncoded, getEventApiCall } from "../Configs.js";
+import {getEventApiCall } from "../Configs.js";
 
 export async function sendEventCreationRequest(eventDTO){
     try {
         const responseData = await getEventApiCall().post(`/create-event`, eventDTO);
+        return responseData;
+    } catch (err) {
+        throw new Error(err.message);
+    }
+}
+
+export async function getEvent(id){
+    try {
+        const responseData = await getEventApiCall().get(`/event/` + id);
         return responseData;
     } catch (err) {
         throw new Error(err.message);
@@ -57,6 +66,15 @@ export async function putApproveRequest(id){
 export async function putDenyRequest(id){
     try {
         const responseData = await getEventApiCall().put(`/deny/` + id);
+        return responseData;
+    } catch (err) {
+        throw new Error(err.message);
+    }
+}
+
+export async function postBuyTicketRequest(ticketDTO){
+    try {
+        const responseData = await getEventApiCall().post(`/buy-ticket/`, ticketDTO);
         return responseData;
     } catch (err) {
         throw new Error(err.message);

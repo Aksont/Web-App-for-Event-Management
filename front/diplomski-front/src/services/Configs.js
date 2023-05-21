@@ -21,13 +21,27 @@ export var getUserApiCall = () =>{
 
 export var getEventApiCall = () =>{
     // return axios.create({
-    //     baseURL: "https://us-central1-diplomski-379607.cloudfunctions.net/user-service",
+    //     baseURL: "https://us-central1-diplomski-379607.cloudfunctions.net/event-service",
     //     headers:  {
     //                 "Content-Type": "application/json"}
     // });
 
     return axios.create({
         baseURL: "http://localhost:8091",
+        headers:  {
+                    "Content-Type": "application/json"}
+    });
+} 
+
+export var getTicketApiCall = () =>{
+    // return axios.create({
+    //     baseURL: "https://us-central1-diplomski-379607.cloudfunctions.net/ticket-service",
+    //     headers:  {
+    //                 "Content-Type": "application/json"}
+    // });
+
+    return axios.create({
+        baseURL: "http://localhost:8092",
         headers:  {
                     "Content-Type": "application/json"}
     });

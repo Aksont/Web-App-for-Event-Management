@@ -28,6 +28,7 @@ import { CreateEventForm } from './components/forms/CreateEventForm';
 import ExplorePage from './components/business/events/ExplorePage';
 import MyEventsPage from './components/business/events/MyEventsPage';
 import PendingEventsPage from './components/business/events/PendingEventsPage';
+import EventDetailedPreview from './components/business/events/EventDetailedPreview';
 
 function App() {
   const registrationForm = <Container><RegistrationForm /></Container>
@@ -47,6 +48,7 @@ function App() {
   const explorePage = <Container><ExplorePage /></Container>
   const myEventsPage = <Container><MyEventsPage /></Container>
   const pendingEventsPage = <Container><PendingEventsPage /></Container>
+  const eventDetailedPreview = <Container><EventDetailedPreview /></Container>
   // const userObjectsList = <Container><UserObjectsList /></Container>
   // const allObjectsList = <Container><AllObjectsList /></Container>
   // const createObjectForm = <Container><CreateObjectForm /></Container>'
@@ -81,7 +83,7 @@ function App() {
                   <Route path="/unavailable" element={unavailablePage} />
 
                   <Route path="/explore" element={explorePage} />
-                  <Route path="/explore/:id" element={underConstructionPage} />
+                  <Route path="/explore/:id" element={eventDetailedPreview} />
 
                   <Route path="/business/organize" element={createEventForm} />
                   <Route path="/business/my-events" element={myEventsPage} />
