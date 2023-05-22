@@ -8,8 +8,9 @@ import { useNavigate  } from "react-router-dom";
 import { setToken, getToken } from '../../services/utils/AuthService';
 import { getUserType } from '../../services/utils/AuthService';
 import { isPositiveNumber } from '../../services/utils/InputValidation';
-import { postBuyTicketRequest } from '../../services/api/EventApi';
+import { postBuyTicketRequest } from '../../services/api/TicketApi';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import { getLoggedUserEmail } from '../../services/utils/AuthService';
 
 export function BuyTicketForm({event, price}) {
 
@@ -18,10 +19,6 @@ export function BuyTicketForm({event, price}) {
     const [purchaseDescription, setPurchaseDescription] = useState("");
     const [purchaseValue, setPurchaseValue] = useState(10);
     const [paypal, setPaypal] = useState();
-
-    const [onApprove, setOnApprove] = useState();
-    const [createOrder, setCreateOrder] = useState();
-    const [onError, setOnError] = useState();
 
     const [orderID, setOrderID] = useState();
  
@@ -46,18 +43,28 @@ export function BuyTicketForm({event, price}) {
     const postBuyRequest = useCallback(
         (e) => {
             e.preventDefault();
-            let ticketDTO = {};
-            postBuyTicketRequest(ticketDTO).then(
+            let email = getLoggedUserEmail();
+
+            if (!email){
+                email = "testuser@test.com";
+            }
+
+            const eventId = event.id;
+            const count = numOfTickets;
+            const ticketJson = {email, eventId, count, price};
+            console.log(ticketJson)
+            postBuyTicketRequest(ticketJson).then(
                 (response) => {
                     console.log(response);
                     alert("Successfully bought ticket.")
                     emptyFields();
                 }, (error) => {
-                  console.log(error);
+                    console.log(error);
+                    alert("Error with saving the tickets.")
                 }
             );
 
-        }, []
+        }, [event.id, numOfTickets, price]
     )
 
     useEffect(() => {
@@ -72,7 +79,6 @@ export function BuyTicketForm({event, price}) {
                         <PayPalButtons
                         style={{ layout: "vertical" }}
                         createOrder={(data, actions) => {
-                            // if (!!actions){
                                 console.log("order")
                                 return actions.order.create({
                                     purchase_units: [
@@ -89,38 +95,41 @@ export function BuyTicketForm({event, price}) {
                                         setOrderID(orderID);
                                         return orderID;
                                     });
-                            // }
-                            
                         }}
+
                         onApprove={(data, actions) => {
-                            // if (!!actions){
                             console.log(data)
                             return actions.order.capture().then(function (details) {
-                                const { payer } = details;
-                                console.log(payer);
-                                // console.log("onApprove");
-                                // let ticketDTO = {};
-                                // postBuyTicketRequest(ticketDTO).then(
-                                //     (response) => {
-                                //         console.log(response);
-                                //         alert("Successfully bought ticket.")
-                                //         emptyFields();
-                                //     }, (error) => {
-                                //       console.log(error);
-                                //       alert("Error with saving the tickets.")
-                                //     }
-                                // );
+                                // data.email, data.eventId, data.count, data.price
+                                let email = getLoggedUserEmail();
+
+                                if (!email){
+                                    email = "testuser@test.com";
+                                }
+
+                                const eventId = event.id;
+                                const count = numOfTickets;
+                                const ticketJson = {email, eventId, count, price};
+                                console.log(ticketJson)
+                                postBuyTicketRequest(ticketJson).then(
+                                    (response) => {
+                                        console.log(response);
+                                        alert("Successfully bought ticket.")
+                                        emptyFields();
+                                    }, (error) => {
+                                      console.log(error);
+                                      alert("Error with saving the tickets.")
+                                    }
+                                );
                             });
-                        // }
                         }}
+
                         onError={(data, actions) => {
-                            // if (!!actions){
                             console.log("error:")
                             console.log(data)
                             console.log("actions:")
                             console.log(actions)
                             alert("An Error occured with your payment ");
-                            // }
                         }}
                         />
                     

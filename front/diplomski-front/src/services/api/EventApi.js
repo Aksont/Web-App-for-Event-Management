@@ -71,12 +71,3 @@ export async function putDenyRequest(id){
         throw new Error(err.message);
     }
 }
-
-export async function postBuyTicketRequest(ticketDTO){
-    try {
-        const responseData = await getEventApiCall().post(`/buy-ticket/`, ticketDTO);
-        return responseData;
-    } catch (err) {
-        throw new Error(err.message);
-    }
-}

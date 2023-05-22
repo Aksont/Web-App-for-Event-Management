@@ -9,10 +9,8 @@ DROP TABLE users;
 
 CREATE TABLE users (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(20), lastname VARCHAR(20), userType VARCHAR(10), email VARCHAR(40), status VARCHAR(10), password VARCHAR(20));
 CREATE TABLE events (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(30), organizerEmail VARCHAR(40), address VARCHAR(50), city VARCHAR(20), eventType VARCHAR(15), startDate VARCHAR(10), endDate VARCHAR(10), startTime VARCHAR(5), endTime VARCHAR(5), status VARCHAR(10), dateCreated VARCHAR(10));
-CREATE TABLE tickets (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, userId int, eventId int, count int, price double, paidByUserId int, status VARCHAR(10), usedCount int, boughtOnDate VARCHAR(10),
-                            FOREIGN KEY (userId) REFERENCES users(id),
-                            FOREIGN KEY (eventId) REFERENCES events(id),
-                            FOREIGN KEY (paidByUserId) REFERENCES users(id)); 
+CREATE TABLE tickets (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, email VARCHAR(40), eventId int, count int, price double, boughtOnDate VARCHAR(10), status VARCHAR(10), usedCount int,
+                            FOREIGN KEY (eventId) REFERENCES events(id)); 
 CREATE TABLE users_bio (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, userId int, bioText VARCHAR(1000), FOREIGN KEY (userId) REFERENCES users(id));
 CREATE TABLE events_desc (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, eventId int, descText VARCHAR(1000), FOREIGN KEY (eventId) REFERENCES events(id));
 CREATE TABLE event_prices (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, eventId int, price double, status VARCHAR(10), dateCreated VARCHAR(10),  FOREIGN KEY (eventId) REFERENCES events(id));
@@ -63,12 +61,12 @@ INSERT INTO user_event_roles (userId, eventId, role, status)
             (2, 4, 'MAIN_ORG', 'ACTIVE'),
             (6, 4, 'PERFORMER', 'ACTIVE');
 
-INSERT INTO tickets (userId, eventId, count, price, paidByUserId, status, usedCount, boughtOnDate)
-    VALUES  (5, 4, 2, 0.0, 5, 'ACTIVE', 2, '2023-01-20'),
-            (5, 3, 1, 0.0, 5, 'ACTIVE', 0, '2023-03-01'),
-            (5, 1, 1, 850.0, 5, 'ACTIVE', 0, '2023-03-15'),
-            (5, 2, 1, 1600.0, 5, 'ACTIVE', 0, '2023-03-14'),
-            (6, 2, 1, 1600.0, 5, 'ACTIVE', 0, '2023-03-14');
+INSERT INTO tickets (email, eventId, count, price, boughtOnDate, status, usedCount)
+    VALUES  ('janko@gmail.com', 4, 2, 0.0, '2023-01-20', 'ACTIVE', 2),
+            ('janko@gmail.com', 3, 1, 0.0, '2023-03-01', 'ACTIVE', 0),
+            ('janko@gmail.com', 1, 1, 850.0, '2023-03-15', 'ACTIVE', 0),
+            ('janko@gmail.com', 2, 1, 1600.0, '2023-03-14', 'ACTIVE', 0),
+            ('entre@kojukai.com', 2, 1, 1600.0, '2023-03-14', 'ACTIVE', 0);
 
 INSERT INTO event_reviews (userId, eventId, mark, reviewText, postedOnDate)
     VALUES  (6, 4, 5, 'What an amazing experience this was! We learned so much about Entrepreneurship, Design Thinking and Customer Discover. I loved it. I met so many great people. Food was amazing, a bit repetitive though, but still very nice.', '2023-02-28');
