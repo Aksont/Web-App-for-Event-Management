@@ -8,3 +8,21 @@ export async function postBuyTicketRequest(ticketDTO){
         throw new Error(err.message);
     }
 }
+
+export async function getTicketRequest(id){
+    try {
+        const responseData = await getTicketApiCall().get(`/ticket/` + id);
+        return responseData;
+    } catch (err) {
+        throw new Error(err.message);
+    }
+}
+
+export async function getUserTickets(email){
+    try {
+        const responseData = await getTicketApiCall().get(`/tickets/` + email);
+        return responseData;
+    } catch (err) {
+        throw new Error(err.message);
+    }
+}

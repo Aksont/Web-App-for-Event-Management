@@ -15,7 +15,7 @@ export default function BusinessNavbar(){
                 <Nav.Link href="/explore">Explore</Nav.Link>
                 <Nav.Link href="/business/organize">Organize</Nav.Link>
                 <Nav.Link href="/business/my-events">My events</Nav.Link>
-                <Nav.Link href="/business/settings">Settings</Nav.Link>
+                <Nav.Link href="/profile/settings">Settings</Nav.Link>
                 <Nav.Link href="/logout">Logout</Nav.Link>
             </Nav>
         </Navbar.Collapse>

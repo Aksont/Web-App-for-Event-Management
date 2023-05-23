@@ -100,7 +100,6 @@ export function BuyTicketForm({event, price}) {
                         onApprove={(data, actions) => {
                             console.log(data)
                             return actions.order.capture().then(function (details) {
-                                // data.email, data.eventId, data.count, data.price
                                 let email = getLoggedUserEmail();
 
                                 if (!email){

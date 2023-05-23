@@ -29,11 +29,16 @@ import ExplorePage from './components/business/events/ExplorePage';
 import MyEventsPage from './components/business/events/MyEventsPage';
 import PendingEventsPage from './components/business/events/PendingEventsPage';
 import EventDetailedPreview from './components/business/events/EventDetailedPreview';
+import TicketsPage from './components/business/tickets/TicketsPage';
+import TicketDetailedPreview from './components/business/tickets/TicketDetailedPreview';
+import SettingsPage from './components/business/profile/SettingsPage';
 
 function App() {
   const registrationForm = <Container><RegistrationForm /></Container>
   const loginForm = <Container><LoginForm /></Container>
   const logoutPage = <Container><LogoutPage /></Container>
+
+  const settingsPage = <Container><SettingsPage /></Container> 
 
   const unavailablePage = <Container><UnavailablePage /></Container>
   const underConstructionPage = <Container><UnderConstructionPage /></Container>
@@ -49,6 +54,9 @@ function App() {
   const myEventsPage = <Container><MyEventsPage /></Container>
   const pendingEventsPage = <Container><PendingEventsPage /></Container>
   const eventDetailedPreview = <Container><EventDetailedPreview /></Container>
+
+  const ticketsPage = <Container><TicketsPage /></Container> 
+  const ticketDetailedPreview = <Container><TicketDetailedPreview /></Container> 
   // const userObjectsList = <Container><UserObjectsList /></Container>
   // const allObjectsList = <Container><AllObjectsList /></Container>
   // const createObjectForm = <Container><CreateObjectForm /></Container>'
@@ -85,11 +93,13 @@ function App() {
                   <Route path="/explore" element={explorePage} />
                   <Route path="/explore/:id" element={eventDetailedPreview} />
 
+                  <Route path="/profile/settings" element={settingsPage} />
+
                   <Route path="/business/organize" element={createEventForm} />
                   <Route path="/business/my-events" element={myEventsPage} />
-                  <Route path="/business/settings" element={underConstructionPage} />
 
-                  <Route path="/client/tickets" element={underConstructionPage} />
+                  <Route path="/client/tickets" element={ticketsPage} />
+                  <Route path="/client/tickets/:id" element={ticketDetailedPreview} />
                   <Route path="/client/visited-events" element={underConstructionPage} /> 
 
                   <Route path="/admin/pending-events" element={pendingEventsPage} />

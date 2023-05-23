@@ -28,3 +28,12 @@ export async function sendLogoutRequest(){
 //         return err.message
 //     }
 }
+
+export async function putChangePasswordRequest(passwordJson){
+    try {
+        const responseData = await getUserApiCall().put(`/change-password`, passwordJson);
+        return responseData;
+    } catch (err) {
+        throw new Error(err.message);
+    }
+}
