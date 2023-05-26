@@ -1,20 +1,31 @@
 const express = require('express');
 const mysql = require('mysql');
 const cors = require("cors");
+const { Storage } = require('@google-cloud/storage');
+const qr = require('qrcode');
+const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 app.use(cors());
 
+
+const storage = new Storage({
+  keyFilename: './config/diplomski-379607-c3ea64667cfc.json',
+  projectId: 'diplomski-379607',
+});
+
 const TICKETS_TABLE = "tickets";
+const QR_BUCKET_NAME = "diplomski-bucket";
 
 class Ticket {
-    constructor(id, email, eventId, count, price, boughtOnDate, status='ACTIVE', usedCount='0') {
+    constructor(id, email, eventId, count, price, boughtOnDate, qrId, status='ACTIVE', usedCount='0') {
         this.id = id;
         this.email = email;
         this.eventId = eventId;
         this.count = count;
         this.price = price;
         this.boughtOnDate = boughtOnDate;
+        this.qrId = qrId;
         this.status = status;
         this.usedCount = usedCount;
     }
@@ -37,13 +48,14 @@ class TicketResponse {
         this.count = ticket.count;
         this.price = ticket.price;
         this.boughtOnDate = ticket.boughtOnDate;
+        this.qrId = ticket.qrId;
         this.status = ticket.status;
         this.usedCount = ticket.usedCount;
     }
 }
 
 function createTicket(data) {
-    let t = new Ticket(data.id, data.email, data.eventId, data.count, data.price, data.boughtOnDate, data.status, data.usedCount);
+    let t = new Ticket(data.id, data.email, data.eventId, data.count, data.price, data.boughtOnDate, data.qrId, data.status, data.usedCount);
 
     return t;
 }
@@ -73,6 +85,9 @@ app.get('/hello', (req, res) => {
 app.post("/buy-ticket", async (req, res) => {
     let ticketDTO = createTicketDTO(req.body);
     ticketDTO.boughtOnDate = getTodayDate();
+
+    const uuid = uuidv4();
+    ticketDTO.qrId = uuid;
     // no need to check if such ticket already exists
 
     const query = fillInsertTicketQuery(ticketDTO);
@@ -84,6 +99,7 @@ app.post("/buy-ticket", async (req, res) => {
     }
 
     const ticket = await getTicketById(insertId)
+    const qrCode = await saveQR(ticket, ticket.qrId);
     const ticketResponse = createTicketResponse(ticket);
 
     return res.json(ticketResponse);
@@ -97,7 +113,20 @@ app.get("/ticket/:id", async (req, res) => {
         res.status(404).send("No ticket with such ID was found.");
     }
 
-    res.json(createTicketResponse(ticket));
+    return res.json(createTicketResponse(ticket));
+})
+
+app.get("/qr/:ticketId", async (req, res) => {
+    const ticketId = req.params.ticketId;
+    let ticket = await getTicketById(ticketId);
+
+    if (ticket === null){
+        res.status(404).send("No ticket with such ID was found.");
+    }
+
+    const qr = await getQR(ticket.qrId);
+
+    return res.json({'qr':qr});
 })
 
 app.get("/tickets/:email", async (req, res) => {
@@ -112,18 +141,6 @@ app.get("/tickets/:email", async (req, res) => {
     }
 
     return res.json(ticketResponses);
-})
-
-app.get("/visited-events/:email", async (req, res) => {
-    // TODO
-    // 
-    // should request from event-service if the event is completed
-})
-
-app.get("/active-tickets/:email", async (req, res) => {
-    // TODO
-    // 
-    // should request from event-service if the event is completed
 })
 
 async function getTicketsForUser(email){
@@ -151,12 +168,13 @@ async function getTicket(query){
 }
 
 function fillInsertTicketQuery(ticket) {
-    const query = "INSERT INTO " + TICKETS_TABLE + " (email, eventId, count, price, boughtOnDate, status, usedCount) VALUES (" 
+    const query = "INSERT INTO " + TICKETS_TABLE + " (email, eventId, count, price, boughtOnDate, qrId, status, usedCount) VALUES (" 
     + sqlStr(ticket.email) + "," 
     + sqlStr(ticket.eventId) + ","
     + sqlStr(ticket.count) + ","
     + sqlStr(ticket.price) + ","
     + sqlStr(ticket.boughtOnDate) + ","
+    + sqlStr(ticket.qrId) + ","
     + sqlStr("ACTIVE") + ","
     + sqlStr("0") + 
     ")";
@@ -176,6 +194,57 @@ function getTodayDate(){
 
     return todaysDate;
 }
+
+async function getQR(qrId){
+    const fileName = qrId + '.png';
+    const bucket = storage.bucket(QR_BUCKET_NAME);
+    const file = bucket.file(fileName);
+    const [fileData] = await file.download();
+
+    const stringQr = Buffer.from(fileData).toString('base64');
+
+    return stringQr;
+}
+
+
+async function saveQR(ticket, uuid){
+    const ticketInfo = "id: " + ticket.id; 
+
+    qr.toDataURL(ticketInfo, async (err, qrDataURL) => {
+        if (err) {
+            console.error('Error generating QR code:', err);
+            return;
+        }
+
+        try {
+            await saveQRCodeToCloudStorage(qrDataURL, uuid);
+        } catch (error) {
+            console.error('Error saving QR code to cloud storage:', error);
+        }
+    });
+
+    return "";
+}
+
+async function saveQRCodeToCloudStorage(qrDataURL, uuid) {
+    const fileName = uuid + '.png';
+    const bucket = storage.bucket(QR_BUCKET_NAME);
+    const file = bucket.file(fileName);
+    const fileStream = file.createWriteStream(); // Create a write stream for the file
+    qr.toFileStream(fileStream, qrDataURL); // Save the QR code image to the file stream
+
+    return new Promise((resolve, reject) => {
+        fileStream.on('error', (err) => {
+        console.error('Error uploading QR code image:', err);
+        reject(err);
+        });
+
+        fileStream.on('finish', () => {
+        console.log('QR code image saved to Google Cloud Storage');
+        resolve();
+        });
+    });
+  };
 
 // vvv every function uses: vvv
 

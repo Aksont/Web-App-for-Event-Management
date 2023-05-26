@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "diplomski-379607",
+  "private_key_id": "c3ea64667cfcce609a5d33d5b12c5b58bc7eb922",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC27Th3nkWHns5y\nj1QmMYnPlWXzg/LZeZ34iEbbsis1R+lAGk0zcHgrVK2RidyqQMoTX5NW0KDilNvn\nGuP/Hpq/Ma2ap/kMXIrbWH1hVJInYumXUY7V27ruF0rRIRUVCVwMLEBrcBbkrqr0\n325DmHVsZVXoAxOZROAJaAOwzQoUUbmKoEV9U8IXv8NuZoOk06gjdY3TkLYNmEzU\nH4XhnD7wUA8DfBwcsWhFH6f+OS6IcCD6xCJito39xkkKgcxdEevnVAc5leF9OzHi\n143CBBwE7X8N6/FrQgWz1vxZ2aeKnKJKevHXaWLDp4Ti2lmAH2s3vd3gwabcFrNV\nuMmSoa1pAgMBAAECggEAB3tAhNjo6lTvB92vkP/T7XTkZm8iOK2KDdMCBeR9sqhK\nJIRm3aiXC5ujHSmUqDRt51iweZufBuFUdJljk4i0hscQ/PsrewtSZQnzl85aC2kW\n2WjdJQc/eBMlDNRT7Mg1Fuzc5h//mbMAnDMCqxpSTCCBYNO2Yp1/5baWtw2NwNqs\nkgLbnbYu0mTZH9dOKxTsPaMBfs1f+KaclKnXhOKGdhxGsXwF/4XPu3u9DMtWr5np\npmRdV6Qz+G9QtdEsqBD29rFb85ZgbgmdSsz9yGFF70HmHTiPxPI8pxYLdbvS+gd+\nwpNh/dkcBQKc8qprTmIPrYzha9iGHepDDlXakxQUEQKBgQDpTqullq+bX5TUguUB\n5WFePPhZYKhS69n1nw4Uc2gqcsZyBA/AaDPsc1UvHhvrMQvubmuaL9BG/Ycl61/A\nkV3EbXKqdxRnOmUt+VqehMmdDEp+pK+X5s1gCxBTS1fAaiRsnSrt9q1r7Cra+bm5\nCPgfFGS7TyBarVDbRrfdPw6k2QKBgQDIuBOOsNRCvnR/Us48SanFwgdhwyjgoNKB\nuvSO3IYpLdMUFaTs05vFgBwOvOfvYfvFKUolwJhCeZlwZk9nSEWQV4ajjIwyYwSw\nDSIxZ0Vguk8iEQpNyv0MZWlOz1Mw1oY+6SWyvqnm2z81KPnaU7Vce7x3lgpoqYN0\nvmoffW2zEQJ/X7DktgYYAKIzaPZG94Adb4mSUxZR87DItPWH0NuE3eQ1gI4p58DV\niyXCypCO4ug6/JBNkfAKfRN/Ww4vN8xnqSk63q/4rl5FIZYklN/h0Yg5BbiGTMdd\ndQcUqxU76K+gQOw1r2R9vMYgza+ffUUwf47dwfWyT37GqylWQGicmQKBgQCT1Sfq\nZ4jeY8IP6OAm/SZCliaztXbNAwYoMJdhBUD24V5eo5ZmK3DGZRXFMRMud59k1oVb\nCt/Zzg/Z/jCrZEqABkcO/Dxh/BX+yJ2Pf31UwcP41k4df80irSqDtiWSid40RanT\nXaRreL20HKrxR8gDBsuH1IV0Eq3UdU5aRRpf0QKBgQDYK9ZHhFIsjrNwiyX21rmf\nS4YRA3C+k0Roskhp1WD/K/5J9jIydFDwb6We2g2OD9NQVirv0Jbg7iH0qRSnJkJp\nxs9vaRyUtNYsvQqwwLp1p8a0j86Zyye4pLqbN8dwCrRs8E1mp7LSeM5zvByMBX4C\nXyQpOZSArbXOW0VnxG7Kjg==\n-----END PRIVATE KEY-----\n",
+  "client_email": "diplomski-bucket-service-acc@diplomski-379607.iam.gserviceaccount.com",
+  "client_id": "112036387038242021679",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/diplomski-bucket-service-acc%40diplomski-379607.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getEvent } from '../../../services/api/EventApi';
 import { useParams } from 'react-router-dom';
 import { getTicketRequest } from '../../../services/api/TicketApi';
+import QRCode from './QRCode';
 
 export default function TicketDetailedPreview(){
 
@@ -32,16 +33,18 @@ export default function TicketDetailedPreview(){
 
     useEffect(() => {
         console.log("id")
-        getEvent(eventId).then(
-            (response) => {
-                const _event = response.data;
-                console.log(_event);
-                setEvent(_event);
-                setEventUrl("/explore/" + _event.id);
-            }, (error) => {
-                console.log(error);
-            }
-        )
+        if (!!eventId){
+            getEvent(eventId).then(
+                (response) => {
+                    const _event = response.data;
+                    console.log(_event);
+                    setEvent(_event);
+                    setEventUrl("/explore/" + _event.id);
+                }, (error) => {
+                    console.log(error);
+                }
+            )
+        }
     }, [eventId])
 
     if (!!ticket && !!event){
@@ -77,8 +80,13 @@ export default function TicketDetailedPreview(){
             <Col sm="3" />
         </Row>
         <br/>
-        {/* TODO */}
-        {/* QR here  */}
+        <Row>
+            <Col sm="3" />
+            <Col sm="6" align='center'>
+                <QRCode ticket={ticket} />
+            </Col>
+            <Col sm="3" />
+        </Row>
         <br/>
         <Row>
             <Col sm="3" />

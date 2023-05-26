@@ -46,12 +46,6 @@ function createUser(data) {
     return u;
 }
 
-// function createNewUser(userDTO) {
-//     let u = new User(userDTO.name, userDTO.lastname, userDTO.userType, userDTO.email, userDTO.password);
-
-//     return u;
-// }
-
 function createLoginDTO(data) {
     let loginDTO = {"email":data.email, "password":data.password};
 
@@ -70,6 +64,21 @@ function createUserResponse(user) {
     return u;
 }
 
+class ChangePasswordDTO {
+    constructor(email, password, newPassword, retypedPassword) {
+        this.email = email;
+        this.password = password;
+        this.newPassword = newPassword;
+        this.retypedPassword = retypedPassword;
+    }
+}
+
+function createChangePasswordDTO(data) {
+    let cp = new ChangePasswordDTO(data.email, data.password, data.newPassword, data.retypedPassword);
+
+    return cp;
+}
+
 class UserBio {
     constructor(id, userId, bioText) {
         this.id = id;
@@ -78,50 +87,77 @@ class UserBio {
     }
 }
 
-// class UserBioResponse {
-//     constructor(email, bioText) {
-//         this.email = email;
-//         this.bioText = bioText;
-//     }
-// }
-
 function createUserBio(data) {
     let bio = new UserBio(data.id, data.userId, data.bioText);
 
     return bio;
 }
 
-// function createUserBioResponse(email, bioText="") {
-//     let bio = new UserBioResponse(email, bioText);
-
-//     return bio;
-// }
-
 app.post("/login", async (req, res) => {
     let loginDTO = createLoginDTO(req.body);
     let user = await getUserByEmail(loginDTO.email);
 
-    if (!!user && isPasswordCorrect(user, loginDTO)){
+    if (!!user && isPasswordCorrect(user, loginDTO.password)){
         return res.json(createUserResponse(user));
     }
 
     return res.status(409).send("Wrong login.");
 })
 
-function isPasswordCorrect(user, loginDTO){
+function isPasswordCorrect(user, loginPassword){
     // TODO password hashing 
-    let isCorrect = user.password === loginDTO.password; 
+    let isCorrect = user.password === loginPassword; 
     
     return isCorrect;
 }
 
+function isPasswordOfValidFormat(password){
+    let isCorrect = password.length > 6; 
+    
+    return isCorrect;
+}
+
+app.put("/change-password", async (req, res) => {
+    let cpDTO = createChangePasswordDTO(req.body);
+    let user = await getUserByEmail(cpDTO.email);
+
+    if (!user){
+        return res.status(409).send("User with such email does not exist.");
+    } else if (!isPasswordCorrect(user, cpDTO.password)){
+        return res.status(409).send("Incorrect old password.");
+    } else if (!isPasswordOfValidFormat(cpDTO.newPassword)){
+        return res.status(409).send("New password is not of valid format.");
+    } else if (cpDTO.newPassword !== cpDTO.retypedPassword){
+        return res.status(409).send("Passwords do not match.");
+    }
+
+    // TODO hashpassword
+    let sqlOkPacket = await changePassword(cpDTO.email, cpDTO.newPassword); // sqlOkPacket is a return value when inserting/updating sql table
+    
+    if (!sqlOkPacket.insertId){
+        return res.status(400).send("Did not change user's password.");
+    }
+
+    return res.json(createUserResponse(user));
+})
+
+async function changePassword(email, newPassword){
+    const query = "UPDATE " + USERS_TABLE + " SET password = " + sqlStr(newPassword) + " WHERE email = " + sqlStr(email);
+    let sqlOkPacket = await doQuery(query);
+
+    return sqlOkPacket.changedRows === 1;
+}
+
 app.post("/register", async (req, res) => {
+    // TODO hash password
     let userDTO = createUserDTO(req.body);
     let user = await getUserByEmail(userDTO.email);
     console.log(user)
 
     if (!!user){
         return res.status(409).send("Email is already in use.");
+    } else if (!isPasswordOfValidFormat(userDTO.password)){
+        return res.status(409).send("Password is not of valid format.");
     }
 
     const query = fillInsertUserQuery(userDTO);
@@ -189,25 +225,6 @@ app.put("/update-info/:email", async (req, res) => {
         res.status(409).send("Did not update password.");
     }
 })
-
-// not neccessary if bio is going to be merged into UserResponse
-//
-// app.get("/user-bio/:email", async (req, res) => {
-//     const email = req.params.email;
-//     let user = await getUserByEmail(email);
-
-//     if (user === null){
-//         res.status(404).send("No user with such email was found.");
-//     }
-
-//     let userBio = await getUserBio(user.id);
-
-//     if (userBio){
-//         res.json(createUserBioResponse(user.email, userBio.bioText));
-//     } else {
-//         res.json(createUserBioResponse(user.email));
-//     }
-// })
 
 // TODO: button for bio update (don't combine with password update)
 app.post("/add-bio/:email", async (req, res) => {

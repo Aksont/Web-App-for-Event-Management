@@ -26,3 +26,12 @@ export async function getUserTickets(email){
         throw new Error(err.message);
     }
 }
+
+export async function getQR(ticketId){
+    try {
+        const responseData = await getTicketApiCall().get(`/qr/` + ticketId);
+        return responseData;
+    } catch (err) {
+        throw new Error(err.message);
+    }
+}

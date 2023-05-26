@@ -107,46 +107,17 @@ function createEventDesc(data) {
     return desc;
 }
 
-// class Role {
-//     constructor(id, userId, eventId, role, status) {
-//         this.id = id;
-//         this.userId = userId;
-//         this.eventId = eventId;
-//         this.role = role;
-//         this.status = status;
-//     }
-// }
-
-// function createRole(data) {
-//     let r = new Role(data.id, data.userId, data.eventId, data.role, data.status);
-
-//     return r;
-// }
-
-// class RoleDTO {
-//     constructor(userId, eventId, role) {
-//         this.userId = userId;
-//         this.eventId = eventId;
-//         this.role = role;
-//     }
-// }
-
-// function createRoleDTO(data) {
-//     let r = new RoleDTO(data.userId, data.eventId, data.role);
-
-//     return r;
-// }
-
-// function createRoleDTOs(data) {
-//     let roleDTOs = []
-    
-//     for (let rd of data){
-//         let r = new RoleDTO(data.userId, data.eventId, data.role);
-//         roleDTOs.push(r);
-//     }
-
-//     return roleDTOs;
-// }
+class FilterDTO {
+    constructor(filterData) {
+        this.name = filterData.name;
+        this.city = filterData.city;
+        this.eventType = filterData.eventType;
+        this.startDateFrom = filterData.startDateFrom;
+        this.startDateTo = filterData.startDateTo;
+        this.priceFrom = filterData.priceFrom;
+        this.priceTo = filterData.priceTo;
+    }
+}
 
 class Price {
     constructor(id, eventId, price, dateCreated) {
@@ -363,86 +334,55 @@ app.post("/price/:eventId", async (req, res) => {
     res.send("Successfully updated event price");
 })
 
-// app.get("/user-roles-for-event/:userId/:eventId", async (req, res) => {
-//     const userId = req.params.userId;
-//     const eventId = req.params.eventId;
 
-//     let roles = await getRoles(userId, eventId);
-
-//     res.json(roles);
-// })
-
-// // *TODO* reorganize so that DTO takes email and then finds userId by email, in response also send emails
-// // for later use
-// // MAIN_ORG, ORGANIZER, PERFORMER
-// app.post("/add-role/:id", async (req, res) => {
-//     const roleDTO = createRoleDTO(req.body);
-//     const id = req.params.id;
-//     let event = await getEvent(id);
-
-//     if (event === null){
-//         res.status(404).send("No event with such ID was found.");
-//     }
-
-//     if (doesAlreadyHaveSuchRole(roleDTO)){
-//         res.status(409).send("User already has the same role assigned.");
-//     } 
-
-//     let isOkay = await addRole(event.id, newDescText);
-
-//     if (!isOkay){
-//         res.status(409).send("Did not add role."); 
-//     }
-    
-//     res.send("Added role successfully."); 
-// })
-
-// // when creating event
-// app.post("/add-roles-event-creation/:id", async (req, res) => {
-//     const roleDTOs = createRoleDTOs(req.body);
-//     const id = req.params.id;
-//     let event = await getEvent(id);
-
-//     if (event === null){
-//         res.status(404).send("No event with such ID was found.");
-//     }
-
-//     // no need to check since this is creation of the event thus no previous roles exist
-//     // if (doesAlreadyHaveSuchRole(roleDTO)){
-//     //     res.status(409).send("User already has the same role assigned.");
-//     // } 
-
-//     for (let r of roleDTOs){
-//         addRole(event.id, newDescText);
-//     } 
-    
-//     res.send("Added role successfully."); 
-// })
-
-// app.delete("/delete-role/:userId/:eventId", async (req, res) => {
-//     const userId = req.params.userId;
-//     const eventId = req.params.eventId;
-
-//     let hasDeactivated = await deleteRole(userId, eventId);
-
-//     if (hasDeactivated){
-//         res.send("Deleted role successfully.");
-//     } else {
-//         res.status(409).send("Did not delete role.");
-//     }
-// })
-
-app.post("/add-review/:id", async (req, res) => {
+app.post("/filter", async (req, res) => {
     // TODO
+    const filterDTO = new FilterDTO(req.body);
+
+    const filterQuery = createFilterQuery(filterDTO);
+
+    await addEventPrice(id, newPrice);
+    res.send("Successfully updated event price");
 })
 
-app.delete("/delete-review/:id", async (req, res) => {
-    // TODO
-})
+// this.name = filterData.name;
+//         this.city = filterData.city;
+//         this.eventType = filterData.eventType;
+//         this.startDateFrom = filterData.startDateFrom;
+//         this.startDateTo = filterData.startDateTo;
+//         this.priceFrom = filterData.priceFrom;
+//         this.priceTo = filterData.priceTo;
 
-app.get("/filter", async (req, res) => {
-    // TODO
-})
+function createFilterQuery(filterDTO){
+    let isFirst = true;
+    const query = "SELECT * FROM " + EVENTS_TABLE + " WHERE ";
+
+    if (!!filterDTO.name){
+        if (!isFirst){
+            query += " AND ";
+        }
+        
+        query += "name LIKE " + sqlStr(filterDTO.name + "%");
+        isFirst = false;
+    }
+
+    if (!!filterDTO.city){
+        if (!isFirst){
+            query += " AND ";
+        }
+
+        query += "city LIKE " + sqlStr(filterDTO.city + "%");
+        isFirst = false;
+    }
+
+    let results = await doQuery(query);
+
+    if (results.length === 0){
+        return null;
+    } else {
+        return createPrice(results[0]);
+    }
+}
 
 function validateNewEventData(eventDTO){
     try {
@@ -496,6 +436,8 @@ function validateTime(time) {
 
     return true;
   }
+
+
 
 async function getEventPrice(eventId){
     const query = "SELECT * FROM " + EVENT_PRICES_TABLE + " WHERE eventId = " + eventId + " AND status = " + sqlStr("ACTIVE") ;
