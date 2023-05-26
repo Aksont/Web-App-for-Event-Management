@@ -155,24 +155,14 @@ app.get("/event/:id", async (req, res) => {
 
 app.get("/available-events", async (req, res) => {
     const events = await getAvailableEvents();
-    let eventResponses = []
-
-    for (let e of events){
-        const eventResponse = await createEventResponse(e);
-        eventResponses.push(eventResponse);
-    }
+    const eventResponses = await getEventResponsesFromEvents(events);
 
     return res.json(eventResponses);
 })
 
 app.get("/pending-events", async (req, res) => {
     const events = await getPendingEvents();
-    let eventResponses = []
-
-    for (let e of events){
-        const eventResponse = await createEventResponse(e);
-        eventResponses.push(eventResponse);
-    }
+    const eventResponses = await getEventResponsesFromEvents(events);
 
     return res.json(eventResponses);
 })
@@ -180,12 +170,7 @@ app.get("/pending-events", async (req, res) => {
 app.get("/events/:email", async (req, res) => {
     const email = req.params.email;
     const events = await getUserEvents(email);
-    let eventResponses = []
-
-    for (let e of events){
-        const eventResponse = await createEventResponse(e);
-        eventResponses.push(eventResponse);
-    }
+    const eventResponses = await getEventResponsesFromEvents(events);
 
     return res.json(eventResponses);
 })
@@ -300,17 +285,13 @@ app.post("/description/:id", async (req, res) => {
 
 app.get("/price/:id", async (req, res) => {
     const id = req.params.id;
-    let event = await getEvent(id);
-
-    // console.log(event);
+    const event = await getEvent(id);
 
     if (event === null){
         return res.status(404).send("No event with such ID was found.");
     }
 
-    let price = await getEventPrice(id);
-
-    // console.log(price);
+    const price = await getEventPrice(id);
 
     return res.json(price.price);
 })
@@ -318,70 +299,102 @@ app.get("/price/:id", async (req, res) => {
 app.post("/price/:eventId", async (req, res) => {
     const id = req.params.eventId;
     const newPrice = req.body.newPrice;
-    let event = await getEvent(id);
+    const event = await getEvent(id);
 
     if (event === null){
         res.status(404).send("No event with such ID was found.");
     }
 
-    let oldPrice = await getEventPrice(id);
+    const oldPrice = await getEventPrice(id);
 
     if (!!oldPrice){
         deactivateOldPrice(oldPrice.id);
     }
 
     await addEventPrice(id, newPrice);
-    res.send("Successfully updated event price");
+    
+    return res.send("Successfully updated event price");
 })
 
 
 app.post("/filter", async (req, res) => {
     // TODO
     const filterDTO = new FilterDTO(req.body);
-
     const filterQuery = createFilterQuery(filterDTO);
+    const results = await doQuery(filterQuery);
+    const events = getEventsFromResults(results);
+    const eventResponses = await getEventResponsesFromEvents(events);
 
-    await addEventPrice(id, newPrice);
-    res.send("Successfully updated event price");
+    return res.json(eventResponses);
 })
 
-// this.name = filterData.name;
-//         this.city = filterData.city;
-//         this.eventType = filterData.eventType;
-//         this.startDateFrom = filterData.startDateFrom;
-//         this.startDateTo = filterData.startDateTo;
-//         this.priceFrom = filterData.priceFrom;
-//         this.priceTo = filterData.priceTo;
+function getEventsFromResults(results){
+    let events = [];
+
+    if (!!results){
+        for (let i in results){
+            events.push(createEvent(results[i]))
+        }
+    }
+
+    return events;
+}
+
+async function getEventResponsesFromEvents(events){
+    let eventResponses = []
+
+    for (let e of events){
+        const eventResponse = await createEventResponse(e);
+        eventResponses.push(eventResponse);
+    }
+
+    return eventResponses;
+}
 
 function createFilterQuery(filterDTO){
-    let isFirst = true;
-    const query = "SELECT * FROM " + EVENTS_TABLE + " WHERE ";
+    let query = "SELECT * FROM " + EVENTS_TABLE + " WHERE status = " + sqlStr("ACTIVE")
+                                                + " AND ("
+                                                + "(startDate > " + sqlStr(getTodayDate()) + ")"
+                                                + " OR "
+                                                + "(startDate = " + sqlStr(getTodayDate()) + " AND startTime > " + sqlStr(getCurrentTime()) + ")"
+                                                + ")"
+                                                ;
 
     if (!!filterDTO.name){
-        if (!isFirst){
-            query += " AND ";
-        }
-        
-        query += "name LIKE " + sqlStr(filterDTO.name + "%");
-        isFirst = false;
+        query = appendFilterQuery(query, "name", filterDTO.name + "%", "LIKE")
     }
 
     if (!!filterDTO.city){
-        if (!isFirst){
-            query += " AND ";
-        }
-
-        query += "city LIKE " + sqlStr(filterDTO.city + "%");
-        isFirst = false;
+        query = appendFilterQuery(query, "city", filterDTO.city + "%", "LIKE")
     }
 
-    let results = await doQuery(query);
-
-    if (results.length === 0){
-        return null;
-    } else {
-        return createPrice(results[0]);
+    if (!!filterDTO.eventType){
+        query = appendFilterQuery(query, "eventType", filterDTO.eventType, "=")
     }
+
+    if (!!filterDTO.startDateFrom){
+        query = appendFilterQuery(query, "startDate", filterDTO.startDateTo, ">=")
+    }
+
+    if (!!filterDTO.startDateTo){
+        query = appendFilterQuery(query, "startDate", filterDTO.startDateTo, "<=")
+    }
+
+    if (!!filterDTO.priceFrom){
+        query = appendFilterQuery(query, "price", filterDTO.priceFrom, ">=")
+    }
+
+    if (!!filterDTO.priceTo){
+        query = appendFilterQuery(query, "price", filterDTO.priceTo, "<=")
+    }
+    
+    return query;
+}
+
+function appendFilterQuery(query, columnName, columnValue, operator){
+    query += " AND " + columnName + " " + operator + " " + sqlStr(columnValue);
+
+    return query;
 }
 
 function validateNewEventData(eventDTO){
