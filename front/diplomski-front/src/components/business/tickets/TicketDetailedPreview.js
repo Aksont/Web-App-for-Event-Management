@@ -99,8 +99,7 @@ export default function TicketDetailedPreview(){
         </Row>
         
     </div>
-</>
+    </>
     }
-    
 }
 

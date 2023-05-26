@@ -116,6 +116,7 @@ class FilterDTO {
         this.startDateTo = filterData.startDateTo;
         this.priceFrom = filterData.priceFrom;
         this.priceTo = filterData.priceTo;
+        this.organizerEmail = filterData.userEmail;
     }
 }
 
@@ -320,7 +321,9 @@ app.post("/price/:eventId", async (req, res) => {
 app.post("/filter", async (req, res) => {
     // TODO
     const filterDTO = new FilterDTO(req.body);
+    console.log(filterDTO)
     const filterQuery = createFilterQuery(filterDTO);
+    console.log(filterQuery)
     const results = await doQuery(filterQuery);
     const events = getEventsFromResults(results);
     const eventResponses = await getEventResponsesFromEvents(events);
@@ -373,7 +376,7 @@ function createFilterQuery(filterDTO){
     }
 
     if (!!filterDTO.startDateFrom){
-        query = appendFilterQuery(query, "startDate", filterDTO.startDateTo, ">=")
+        query = appendFilterQuery(query, "startDate", filterDTO.startDateFrom, ">=")
     }
 
     if (!!filterDTO.startDateTo){
@@ -386,6 +389,10 @@ function createFilterQuery(filterDTO){
 
     if (!!filterDTO.priceTo){
         query = appendFilterQuery(query, "price", filterDTO.priceTo, "<=")
+    }
+
+    if (!!filterDTO.organizerEmail){
+        query = appendFilterQuery(query, "organizerEmail", filterDTO.organizerEmail, "=")
     }
     
     return query;

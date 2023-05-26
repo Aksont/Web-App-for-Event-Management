@@ -4,6 +4,7 @@ import { Form, Button, Container, Col, Row} from 'react-bootstrap';
 import LabeledInput from './LabeledInput';
 import '../../assets/styles/buttons.css';
 import { putChangePasswordRequest } from '../../services/api/UserApi';
+import { getLoggedUserEmail } from '../../services/utils/AuthService';
 
 export function ChangePasswordForm() {
 
@@ -37,7 +38,8 @@ export function ChangePasswordForm() {
     const changePassword = useCallback(
         (e) => {
             e.preventDefault();
-            const passwordJson = {password, newPassword, retypedNewPassword};
+            const email = getLoggedUserEmail();
+            const passwordJson = {email, password, newPassword, retypedNewPassword};
             console.log(passwordJson)
 
             putChangePasswordRequest(passwordJson).then(

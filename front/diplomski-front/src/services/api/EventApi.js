@@ -71,3 +71,12 @@ export async function putDenyRequest(id){
         throw new Error(err.message);
     }
 }
+
+export async function postFilterRequest(filterDTO){
+    try {
+        const responseData = await getEventApiCall().post(`/filter`, filterDTO);
+        return responseData;
+    } catch (err) {
+        throw new Error(err.message);
+    }
+}
