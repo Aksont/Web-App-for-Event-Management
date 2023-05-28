@@ -13,10 +13,8 @@ import { getLoggedUserEmail } from '../../services/utils/AuthService';
 
 export function CreateEventForm() {
    
-    const navigate = useNavigate();
     const possibleEventTypes = ["MUSIC", "NATURE", "EDUCATION", "OTHER"];
    
-    // name, address, city, eventType, startDate, endDate, startTime, endTime, status, dateCreated
     const [name, setName] = useState("");
     const [address, setAddress] = useState("");
     const [city, setCity] = useState("");
@@ -27,6 +25,16 @@ export function CreateEventForm() {
     const [endTime, setEndTime] = useState("");
     const [description, setDescription] = useState("");
     const [price, setPrice] = useState("");
+
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        let role = getUserType();
+        
+        if (role !== "BUSINESS"){
+            navigate("/unavailable")
+        }
+    }, [navigate])
 
     const createButtonPressed = (e) => {
       if (validateInput()) {
@@ -147,8 +155,6 @@ export function CreateEventForm() {
                     <LabeledInput value={name} label="Name" inputName="name" placeholder="Type event name" required onChangeFunc={setName}/>
                     <LabeledInput value={address} label="Address" inputName="address" placeholder="Type event address" required onChangeFunc={setAddress}/>
                     <LabeledInput value={city} label="City" inputName="city" placeholder="Type event city" required onChangeFunc={setCity}/>
-
-                {/* event type dropbox */}
 
                     <Row className='mt-2'>
                         <Col sm={4}/>

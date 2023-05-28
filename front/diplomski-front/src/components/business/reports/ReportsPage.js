@@ -3,18 +3,22 @@ import '../../../assets/styles/business.css';
 import {useEffect, useState} from 'react';
 import { Row, Col, Form, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router';
-// import { getRole } from '../../services/utils/AuthService';
-import { getAvailableEvents } from '../../../services/api/EventApi';
-import { getUserEvents } from '../../../services/api/EventApi';
-import { getLoggedUserEmail } from '../../../services/utils/AuthService';
-import { FilterForm } from '../../forms/FilterForm';
+import { getUserType } from '../../../services/utils/AuthService';
 import { ReportForm } from '../../forms/ReportForm';
 import ReportCharts from './ReportCharts';
 
 export default function ReportsPage(){
 
     const [report, setReport] = useState();
+    const navigate = useNavigate();
 
+    useEffect(() => {
+        let role = getUserType();
+        
+        if (role !== "BUSINESS"){
+            navigate("/unavailable")
+        }
+    }, [navigate])
 
     return <>
         <br/>

@@ -8,11 +8,22 @@ import ListedEvent from './ListedEvent';
 import { getPendingEvents, putApproveRequest, putDenyRequest } from '../../../services/api/EventApi';
 import EventsList from './EventsList';
 import PendingEvent from './PendingEvent';
+import { getUserType } from '../../../services/utils/AuthService';
 
 export default function PendingEventsPage(){
 
     const [events, setEvents] = useState([]);
     const [listedEvents, setListedEvents] = useState([]);
+
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        let role = getUserType();
+        
+        if (role !== "ADMIN"){
+            navigate("/unavailable")
+        }
+    }, [navigate])
 
     useEffect(() => {
         getPendingEvents().then(

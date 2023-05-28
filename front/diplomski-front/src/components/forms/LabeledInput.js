@@ -1,6 +1,4 @@
 import { Form, Row, Col} from 'react-bootstrap';
-// import { faInfoCircle } from '@fortawesome/free-solid-svg-icons'
-// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import '../../assets/styles/form.css';
 
 export default function LabeledInput({label, inputName, placeholder, onChangeFunc, value}){

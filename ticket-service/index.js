@@ -81,16 +81,6 @@ class ReportDTO {
     }
 }
 
-app.get('/', (req, res) => {
-    let message = req.query.message || "ticket-service";
-
-    res.status(200).send(message);
-})
-
-app.get('/hello', (req, res) => {
-    res.status(200).send("ticket-service");
-})
-
 app.post("/buy-ticket", async (req, res) => {
     let ticketDTO = createTicketDTO(req.body);
     ticketDTO.boughtOnDate = getTodayDate();
@@ -265,8 +255,6 @@ async function getReportForPeriods(reportDTO, periods){
         const numOfTickets = tickets.length;
         const income = tickets.reduce((sum, ticket) => sum + ticket.price, 0);
 
-        // let periodRep = {};
-        // periodRep[period] = {numOfTickets, totalPrice};
         report.push({'period' : period.toString(), "numOfTickets": numOfTickets, "income": income});
     }
 

@@ -7,6 +7,8 @@ import { getEvent } from '../../../services/api/EventApi';
 import { useParams } from 'react-router-dom';
 import { getTicketRequest } from '../../../services/api/TicketApi';
 import QRCode from './QRCode';
+import { getLoggedUserEmail } from '../../../services/utils/AuthService';
+import { useNavigate } from 'react-router-dom';
 
 export default function TicketDetailedPreview(){
 
@@ -15,6 +17,24 @@ export default function TicketDetailedPreview(){
     const [eventId, setEventId] = useState();
     const [event, setEvent] = useState();
     const [eventUrl, setEventUrl] = useState();
+    const [loggedUserEmail, setLoggedUserEmail] = useState();
+
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        let email = getLoggedUserEmail();
+        setLoggedUserEmail(email);
+        
+        if (!email){
+            navigate("/unavailable")
+        }
+    }, [navigate])
+
+    useEffect(() => {
+        if (!!ticket && !!loggedUserEmail && loggedUserEmail !== ticket.email) {
+            navigate("/unavailable")
+        }
+    }, [ticket, navigate, loggedUserEmail])
 
     useEffect(() => {
         console.log("id")

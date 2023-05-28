@@ -9,7 +9,6 @@ import { getAvailableEvents } from '../../../services/api/EventApi';
 
 export default function EventsList({events, type="EXPLORE"}){
 
-    // const [events, setEvents] = useState([]);
     const [listedEvents, setListedEvents] = useState([]);
     const [changabledCollumnHeader, setChangabledCollumnHeader] = useState("");
 

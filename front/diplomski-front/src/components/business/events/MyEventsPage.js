@@ -10,11 +10,22 @@ import EventsList from './EventsList';
 import { getUserEvents } from '../../../services/api/EventApi';
 import { getLoggedUserEmail } from '../../../services/utils/AuthService';
 import { FilterForm } from '../../forms/FilterForm';
+import { getUserType } from '../../../services/utils/AuthService';
 
 export default function MyEventsPage(){
 
     const [events, setEvents] = useState([]);
     const [userEmail, setUserEmail] = useState("");
+
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        let role = getUserType();
+        
+        if (role !== "BUSINESS"){
+            navigate("/unavailable")
+        }
+    }, [navigate])
 
     useEffect(() => {
         let _userEmail = getLoggedUserEmail();

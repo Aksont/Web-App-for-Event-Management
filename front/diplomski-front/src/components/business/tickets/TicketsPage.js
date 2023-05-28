@@ -3,16 +3,23 @@ import '../../../assets/styles/business.css';
 import {useEffect, useState} from 'react';
 import { Row, Col } from 'react-bootstrap';
 import { useNavigate } from 'react-router';
-// import { getRole } from '../../services/utils/AuthService';
-import { getAvailableEvents } from '../../../services/api/EventApi';
-import { getUserEvents } from '../../../services/api/EventApi';
 import { getLoggedUserEmail } from '../../../services/utils/AuthService';
 import TicketsList from './TicketsList';
 import { getUserTickets } from '../../../services/api/TicketApi';
+import { getUserType } from '../../../services/utils/AuthService';
 
 export default function TicketsPage(){
 
     const [tickets, setTickets] = useState([]);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        let role = getUserType();
+        
+        if (role !== "PHYSICAL"){
+            navigate("/unavailable")
+        }
+    }, [navigate])
 
     useEffect(() => {
         let userEmail = getLoggedUserEmail();

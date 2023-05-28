@@ -7,7 +7,6 @@ app.use(cors());
 
 const EVENTS_TABLE = "events";
 const EVENTS_DESC_TABLE = "events_desc";
-// const USER_EVENT_ROLES_TABLE = "user_event_roles";
 const EVENT_PRICES_TABLE = "event_prices";
 
 class Event {
@@ -135,12 +134,6 @@ function createPrice(data) {
     return p;
 }
 
-app.get('/', (req, res) => {
-    let message = req.query.message || "event-service";
-
-    return res.status(200).send(message);
-})
-
 app.get("/event/:id", async (req, res) => {
     const id = req.params.id;
     let event = await getEvent(id);
@@ -158,14 +151,14 @@ app.get("/available-events", async (req, res) => {
     const events = await getAvailableEvents();
     const eventResponses = await getEventResponsesFromEvents(events);
 
-    return res.json(eventResponses);
+    return res.json(sortEventsByStartDate(eventResponses));
 })
 
 app.get("/pending-events", async (req, res) => {
     const events = await getPendingEvents();
     const eventResponses = await getEventResponsesFromEvents(events);
 
-    return res.json(eventResponses);
+    return res.json(sortEventsByStartDate(eventResponses));
 })
 
 app.get("/events/:email", async (req, res) => {
@@ -173,7 +166,7 @@ app.get("/events/:email", async (req, res) => {
     const events = await getUserEvents(email);
     const eventResponses = await getEventResponsesFromEvents(events);
 
-    return res.json(eventResponses);
+    return res.json(sortEventsByStartDate(eventResponses));
 })
 
 app.put("/approve/:id", async (req, res) => {
@@ -243,6 +236,7 @@ app.post("/create-event", async (req, res) => {
     return res.json(eventResponse);
 })
 
+// NOT USED
 app.delete("/event/:id", async (req, res) => {
     const id = req.params.id;
     let event = await getEvent(id);
@@ -261,6 +255,7 @@ app.delete("/event/:id", async (req, res) => {
     }
 })
 
+// NOT USED | combined into event response
 app.post("/description/:id", async (req, res) => {
     const newDescText = req.body.descText;
     const id = req.params.id;
@@ -297,6 +292,7 @@ app.get("/price/:id", async (req, res) => {
     return res.json(price.price);
 })
 
+// NOT USED
 app.post("/price/:eventId", async (req, res) => {
     const id = req.params.eventId;
     const newPrice = req.body.newPrice;
@@ -319,7 +315,6 @@ app.post("/price/:eventId", async (req, res) => {
 
 
 app.post("/filter", async (req, res) => {
-    // TODO
     const filterDTO = new FilterDTO(req.body);
     console.log(filterDTO)
     const filterQuery = createFilterQuery(filterDTO);
@@ -328,8 +323,14 @@ app.post("/filter", async (req, res) => {
     const events = getEventsFromResults(results);
     const eventResponses = await getEventResponsesFromEvents(events);
 
-    return res.json(eventResponses);
+    return res.json(sortEventsByStartDate(eventResponses));
 })
+
+function sortEventsByStartDate(events){
+    events = events.sort((a, b) => a.startDate - b.startDate);
+
+    return events
+}
 
 function getEventsFromResults(results){
     let events = [];
@@ -383,13 +384,13 @@ function createFilterQuery(filterDTO){
         query = appendFilterQuery(query, "startDate", filterDTO.startDateTo, "<=")
     }
 
-    if (!!filterDTO.priceFrom){
-        query = appendFilterQuery(query, "price", filterDTO.priceFrom, ">=")
-    }
+    // if (!!filterDTO.priceFrom){
+    //     query = appendFilterQuery(query, "price", filterDTO.priceFrom, ">=")
+    // }
 
-    if (!!filterDTO.priceTo){
-        query = appendFilterQuery(query, "price", filterDTO.priceTo, "<=")
-    }
+    // if (!!filterDTO.priceTo){
+    //     query = appendFilterQuery(query, "price", filterDTO.priceTo, "<=")
+    // }
 
     if (!!filterDTO.organizerEmail){
         query = appendFilterQuery(query, "organizerEmail", filterDTO.organizerEmail, "=")
@@ -456,8 +457,6 @@ function validateTime(time) {
 
     return true;
   }
-
-
 
 async function getEventPrice(eventId){
     const query = "SELECT * FROM " + EVENT_PRICES_TABLE + " WHERE eventId = " + eventId + " AND status = " + sqlStr("ACTIVE") ;
@@ -628,57 +627,6 @@ async function addEventDesc(eventId, newDescText){
 
     return isOkay;
 }
-
-// async function doesAlreadyHaveSuchRole(userId, eventId, role){
-//     let roles = await getRoles(userId, eventId);
-
-//     for (let r of roles){
-//         if (r.role === role){
-//             return true;
-//         }
-//     }
-
-//     return false;
-// }
-
-// async function getRoles(userId, eventId){
-//     const query = "SELECT * FROM " + USER_EVENT_ROLES_TABLE 
-//                 + " WHERE userId = " + userId 
-//                 + " AND eventId = " + eventId 
-//                 + " AND status = " + sqlStr("ACTIVE")
-//                 ;
-    
-//     let roles = []
-//     let results = await doQuery(query);
-
-//     if (results.length !== 0){
-//         for (let r of results){
-//             roles.push(createRole(r));
-//         }
-//     }
-
-//     return roles;
-// }
-
-// async function addRole(roleDTO){
-//     const query = "INSERT INTO " + USER_EVENT_ROLES_TABLE + " (userId, eventId, role, status) VALUES (" 
-//     + sqlStr(roleDTO.userId) + "," 
-//     + sqlStr(roleDTO.eventId) + "," 
-//     + sqlStr(roleDTO.role) + "," 
-//     + sqlStr("ACTIVE") + 
-//     ")";
-
-//     let sqlOkPacket = await doQuery(query);
-
-//     return sqlOkPacket.insertId !== null && sqlOkPacket.insertId !== undefined;
-// }
-
-// async function deleteRole(userId, eventId){
-//     const query = "UPDATE " + USER_EVENT_ROLES_TABLE + " SET status = " + sqlStr("DELETED") + " WHERE userId = " + userId + " AND eventId = " + eventId;
-//     let sqlOkPacket = await doQuery(query);
-
-//     return sqlOkPacket.changedRows === 1;
-// }
 
 async function updateEventDesc(eventId, newDescText){
     const query = "UPDATE " + EVENTS_DESC_TABLE + " SET descText = " + sqlStr(newDescText) + " WHERE eventId = " + eventId;

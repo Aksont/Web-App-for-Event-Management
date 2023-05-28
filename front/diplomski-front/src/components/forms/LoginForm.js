@@ -5,7 +5,6 @@ import { sendLoginRequest } from '../../services/api/UserApi';
 import LabeledInput from './LabeledInput';
 import '../../assets/styles/buttons.css';
 import { useNavigate  } from "react-router-dom";    
-import { setToken, getToken } from '../../services/utils/AuthService';
 import { getUserType } from '../../services/utils/AuthService';
 
 export function LoginForm() {
@@ -14,13 +13,13 @@ export function LoginForm() {
     const [password, setPassword] = useState("");
 
     const navigate = useNavigate ();
-    // const userRole = getUserType();
 
-    // useEffect(() => {
-    //     if(!!userRole){
-    //         navigate("/" + userRole.toLowerCase());
-    //     }
-    // }, [navigate, userRole])
+    useEffect(() => {
+      let role = getUserType();
+        if(!!role){
+            navigate("/explore");
+        }
+    }, [navigate])
 
     const loginButtonPressed = (e) => {
       if (validateInput()) {

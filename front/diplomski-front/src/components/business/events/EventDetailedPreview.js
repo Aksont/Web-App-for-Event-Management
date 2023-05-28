@@ -8,6 +8,7 @@ import { getEvent } from '../../../services/api/EventApi';
 import { useParams } from 'react-router-dom';
 import { BuyTicketForm } from '../../forms/BuyTicketForm';
 import MapContainer from './MapContainer';
+import { getUserType } from '../../../services/utils/AuthService';
 
 export default function EventDetailedPreview(){
 
@@ -16,6 +17,12 @@ export default function EventDetailedPreview(){
     const [price, setPrice] = useState("");
     const [buyForm, setBuyForm] = useState();
     const [mapContainer, setMapContainer] = useState();
+    const [userRole, setUserRole] = useState("");
+
+    useEffect(() => {
+        let role = getUserType();
+        setUserRole(role);
+    }, [])
 
     useEffect(() => {
         console.log("id")
@@ -115,7 +122,7 @@ export default function EventDetailedPreview(){
             <Col sm="3" />
         </Row>
     </div>
-        {buyForm}
+        {userRole === "PHYSICAL" ? buyForm : null}
 </>
     }
     

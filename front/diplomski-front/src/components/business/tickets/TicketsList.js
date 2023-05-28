@@ -9,7 +9,6 @@ import ListedTicket from './ListedTicket';
 
 export default function TicketsList({tickets}){
 
-    // const [events, setEvents] = useState([]);
     const [listedTickets, setListedTickets] = useState([]);
 
     useEffect(() => {

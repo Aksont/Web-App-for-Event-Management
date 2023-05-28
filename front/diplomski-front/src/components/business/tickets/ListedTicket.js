@@ -3,7 +3,6 @@ import '../../../assets/styles/business.css';
 import { Row, Col } from 'react-bootstrap';
 import FixedWidthRegButton from '../../buttons/FixedWidthRegButton';
 import { useState, useEffect } from 'react';
-import { getActivePrice } from '../../../services/api/EventApi';
 import { getEvent } from '../../../services/api/EventApi';
 
 export default function ListedTicket({ticket}){

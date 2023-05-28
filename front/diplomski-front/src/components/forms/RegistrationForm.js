@@ -15,14 +15,14 @@ export function RegistrationForm() {
     const [password, setPassword] = useState("");
     const [retypedPassword, setRetypedPassword] = useState("");
 
-    // const userRole = getRole();
     const navigate = useNavigate();
 
-    // useEffect(() => {
-    //     if(!!userRole){
-    //         navigate("/" + userRole.toLowerCase());
-    //     }
-    // }, [navigate, userRole])
+    useEffect(() => {
+      let role = getUserType();
+        if(!!role){
+            navigate("/explore");
+        }
+    }, [navigate])
 
     const registerButtonPressed = (e) => {
       if (validateInput()) {
@@ -33,10 +33,16 @@ export function RegistrationForm() {
     }
 
     const validateInput = () => {
+      console.log(checkLettersInput(name) && name.length > 0 );  
+      console.log            (checkLettersInput(lastname) && lastname.length > 0 ); 
+      console.log          (checkEmailInput(email) && email.length > 0 ); 
+      console.log         (checkPasswordInput(password) ); 
+      console.log         (password === retypedPassword); 
+
       let valid = (checkLettersInput(name) && name.length > 0 ) && 
                   (checkLettersInput(lastname) && lastname.length > 0 ) && 
                   (checkEmailInput(email) && email.length > 0 ) && 
-                  (checkPasswordInput(password) && password.length >= 8 ) && 
+                  (checkPasswordInput(password) ) && 
                   password === retypedPassword
                   ; 
 
@@ -95,7 +101,7 @@ export function RegistrationForm() {
                   </Row> 
                   
                   <LabeledInput value={email} label="Email" inputName="email" placeholder="Type your email" required onChangeFunc={setEmail}/>
-                  <LabeledInput value={password} label="Password" inputName="password" placeholder="Type your password" required onChangeFunc={setPassword}/>
+                  <LabeledInput value={password} label="Password" inputName="password" placeholder="Min 6 chars" required onChangeFunc={setPassword}/>
                   <LabeledInput value={retypedPassword} label="Retyped Password" inputName="retypedPassword" placeholder="Retype your password" required onChangeFunc={setRetypedPassword}/>
 
                   <Row className='mt-2'>

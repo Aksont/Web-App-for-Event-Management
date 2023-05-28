@@ -28,7 +28,7 @@ export function checkEmailInput(input){
 }
 
 export function checkPasswordInput(input){
-    return input.length > 6; //validPassword.test(input)
+    return input.length >= 6; //validPassword.test(input)
 }
 
 export function checkSecondPasswordInput(input, password){
@@ -81,19 +81,3 @@ export function isYyMmDd(input) { // yyyy-mm-dd
 
     return valid;
 }
-
-/*function capitalizeString(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1).toString().toLowerCase();
-}
-
-function uniformString(string) {
-    return string.charAt(0) + string.slice(1).toString().toLowerCase();
-}
-
-function capitalizeWords(string) {
-    const words = string.split(/ +/);
-    for (let index = 0; index < words.length; index++) {
-        words[index] = capitalizeString(words[index]);
-    }
-    return words.join(' ')
-}*/

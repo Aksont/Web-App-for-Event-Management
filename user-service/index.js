@@ -105,14 +105,13 @@ app.post("/login", async (req, res) => {
 })
 
 function isPasswordCorrect(user, loginPassword){
-    // TODO password hashing 
     let isCorrect = user.password === loginPassword; 
     
     return isCorrect;
 }
 
 function isPasswordOfValidFormat(password){
-    let isCorrect = password.length > 6; 
+    let isCorrect = password.length >= 6; 
     
     return isCorrect;
 }
@@ -131,7 +130,6 @@ app.put("/change-password", async (req, res) => {
         return res.status(409).send("Passwords do not match.");
     }
 
-    // TODO hashpassword
     await changePassword(cpDTO.email, cpDTO.newPassword); // sqlOkPacket is a return value when inserting/updating sql table
 
     return res.json(createUserResponse(user));
@@ -145,10 +143,8 @@ async function changePassword(email, newPassword){
 }
 
 app.post("/register", async (req, res) => {
-    // TODO hash password
     let userDTO = createUserDTO(req.body);
     let user = await getUserByEmail(userDTO.email);
-    console.log(user)
 
     if (!!user){
         return res.status(409).send("Email is already in use.");
@@ -168,38 +164,31 @@ app.post("/register", async (req, res) => {
     return res.json(createUserResponse(user));
 })
 
-app.get('/', (req, res) => {
-    let message = req.query.message || "user-service";
-
-    res.status(200).send(message);
-})
-
-app.get('/hello', (req, res) => {
-    res.status(200).send("user-service");
-})
-
+// NOT USED
 app.get("/user-id/:id", async (req, res) => {
     const id = req.params.id;
     let user = await getUserById(id);
 
     if (user === null){
-        res.status(404).send("No user with such ID was found.");
+        return res.status(404).send("No user with such ID was found.");
     }
 
-    res.json(createUserResponse(user));
+    return res.json(createUserResponse(user));
 })
 
+// NOT USED
 app.get("/user-email/:email", async (req, res) => {
     const email = req.params.email;
     let user = await getUserByEmail(email);
 
     if (user === null){
-        res.status(404).send("No user with such email was found.");
+        return res.status(404).send("No user with such email was found.");
     }
 
-    res.json(createUserResponse(user));
+    return res.json(createUserResponse(user));
 })
 
+// NOT USED
 // TODO: button for password update (don't combine with bio update)
 // this currently updates only password
 app.put("/update-info/:email", async (req, res) => {
@@ -208,21 +197,21 @@ app.put("/update-info/:email", async (req, res) => {
     let user = await getUserByEmail(email);
 
     if (user === null){
-        res.status(404).send("No user with such email was found.");
+        return res.status(404).send("No user with such email was found.");
     } else if (user.password === newPassword) {
-        res.status(400).send("Can not change the same password.");
+        return res.status(400).send("Can not change the same password.");
     }
 
     let hasUpdated = await updatePassword(user.id, newPassword);
 
     if (hasUpdated){
-        res.send("Updated password successfully.");
+        return res.send("Updated password successfully.");
     } else {
-        res.status(409).send("Did not update password.");
+        return res.status(409).send("Did not update password.");
     }
 })
 
-// TODO: button for bio update (don't combine with password update)
+// NOT USED
 app.post("/add-bio/:email", async (req, res) => {
     const email = req.params.email;
     const newBioText = req.body.bioText;
@@ -241,6 +230,7 @@ app.post("/add-bio/:email", async (req, res) => {
     res.send("Updated bio successfully."); 
 })
 
+// NOT USED
 // TODO update info of an existing user
 app.delete("/delete-user/:email", async (req, res) => {
     const email = req.params.email;

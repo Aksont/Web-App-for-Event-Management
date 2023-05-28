@@ -125,14 +125,14 @@ export function FilterForm({setEventsFunc, myUserEmail=""}) {
                                 <LabeledInput value={startDateTo} label="Latest start date" inputName="startDateTo" placeholder="Type latest start date" required onChangeFunc={setStartDateTo}/>
                             </Col>
                         </Row> 
-                        <Row className='mt-2'>
+                        {/* <Row className='mt-2'>
                             <Col sm={6} align='center'>
                                 <LabeledInput value={priceFrom} label="Lowest price" inputName="priceFrom" placeholder="Type lowest price" required onChangeFunc={setPriceFrom}/>
                             </Col>
                             <Col sm={6} align='center'>
                                 <LabeledInput value={priceTo} label="Highest price" inputName="priceTo" placeholder="Type highest price" required onChangeFunc={setPriceTo}/>
                             </Col>
-                        </Row> 
+                        </Row>  */}
                         <Row className='mt-2'>
                             <Col sm={4}/>
                             <Col sm={4} align='center'>
