@@ -11,7 +11,6 @@ export default function BusinessNavbar(){
         <Navbar.Toggle />
         <Navbar.Collapse className="ps-2">
             <Nav className="ms-auto">
-                {/* also a link for profile, but so that the clients could see business profiles */}
                 <Nav.Link href="/explore">Explore</Nav.Link>
                 <Nav.Link href="/business/organize">Organize</Nav.Link>
                 <Nav.Link href="/business/my-events">My events</Nav.Link>

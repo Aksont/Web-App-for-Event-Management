@@ -28,7 +28,7 @@ export function checkEmailInput(input){
 }
 
 export function checkPasswordInput(input){
-    return validPassword.test(input)
+    return input.length > 6; //validPassword.test(input)
 }
 
 export function checkSecondPasswordInput(input, password){

@@ -11,8 +11,8 @@ export default function AdminNavbar(){
         <Navbar.Toggle />
         <Navbar.Collapse className="ps-2">
             <Nav className="ms-auto">
-                <Nav.Link href="/admin/pending-events">Events</Nav.Link>
-                <Nav.Link href="/admin/pending-reviews">Reviews</Nav.Link>
+                <Nav.Link href="/explore">Explore</Nav.Link>
+                <Nav.Link href="/admin/pending-events">Pending events</Nav.Link>
                 <Nav.Link href="/logout">Logout</Nav.Link>
             </Nav>
         </Navbar.Collapse>

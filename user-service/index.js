@@ -132,11 +132,7 @@ app.put("/change-password", async (req, res) => {
     }
 
     // TODO hashpassword
-    let sqlOkPacket = await changePassword(cpDTO.email, cpDTO.newPassword); // sqlOkPacket is a return value when inserting/updating sql table
-    
-    if (!sqlOkPacket.insertId){
-        return res.status(400).send("Did not change user's password.");
-    }
+    await changePassword(cpDTO.email, cpDTO.newPassword); // sqlOkPacket is a return value when inserting/updating sql table
 
     return res.json(createUserResponse(user));
 })

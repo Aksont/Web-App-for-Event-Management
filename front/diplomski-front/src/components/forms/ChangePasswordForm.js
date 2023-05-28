@@ -10,7 +10,7 @@ export function ChangePasswordForm() {
 
     const [password, setPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
-    const [retypedNewPassword, setRetypedNewPassword] = useState("");
+    const [retypedPassword, setRetypedNewPassword] = useState("");
 
     const changePasswordButtonPressed = (e) => {
       if (validateInput()) {
@@ -23,7 +23,7 @@ export function ChangePasswordForm() {
 
     const validateInput = () => {
       let valid = newPassword.length > 0 && checkPasswordInput(newPassword)
-                    && retypedNewPassword === newPassword;
+                    && retypedPassword === newPassword;
                   ;
 
       return valid;
@@ -39,7 +39,7 @@ export function ChangePasswordForm() {
         (e) => {
             e.preventDefault();
             const email = getLoggedUserEmail();
-            const passwordJson = {email, password, newPassword, retypedNewPassword};
+            const passwordJson = {email, password, newPassword, retypedPassword};
             console.log(passwordJson)
 
             putChangePasswordRequest(passwordJson).then(
@@ -47,10 +47,11 @@ export function ChangePasswordForm() {
                     emptyFields();
                     alert("Successfuly updated password.");
                 }, (error) => {
-                  alert("Invalid login");
+                    console.log(error.message);
+                  alert("Error while updating password");
                 }
             );
-        }, [newPassword, password, retypedNewPassword]
+        }, [newPassword, password, retypedPassword]
     )
 
     return (<>
@@ -61,7 +62,7 @@ export function ChangePasswordForm() {
                     <Form>
                         <LabeledInput value={password} label="Password" inputName="password" placeholder="Type your current password" required onChangeFunc={setPassword}/>
                         <LabeledInput value={newPassword} label="New password" inputName="password" placeholder="Type your new password" required onChangeFunc={setNewPassword}/>
-                        <LabeledInput value={retypedNewPassword} label="Retyped new password" inputName="password" placeholder="Retype your new password" required onChangeFunc={setRetypedNewPassword}/>
+                        <LabeledInput value={retypedPassword} label="Retyped new password" inputName="password" placeholder="Retype your new password" required onChangeFunc={setRetypedNewPassword}/>
     
                         <Row className='mt-2'>
                             <Col sm={4}/>

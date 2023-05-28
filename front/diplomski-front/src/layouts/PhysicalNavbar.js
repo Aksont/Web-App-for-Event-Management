@@ -13,7 +13,6 @@ export default function PhysicalNavbar(){
             <Nav className="ms-auto">
                 <Nav.Link href="/explore">Explore</Nav.Link>
                 <Nav.Link href="/client/tickets">Tickets</Nav.Link>
-                <Nav.Link href="/client/visited-events">Visited events</Nav.Link>
                 <Nav.Link href="/profile/settings">Settings</Nav.Link>
                 <Nav.Link href="/logout">Logout</Nav.Link>
             </Nav>
