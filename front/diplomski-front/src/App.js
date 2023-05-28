@@ -32,6 +32,7 @@ import EventDetailedPreview from './components/business/events/EventDetailedPrev
 import TicketsPage from './components/business/tickets/TicketsPage';
 import TicketDetailedPreview from './components/business/tickets/TicketDetailedPreview';
 import SettingsPage from './components/business/profile/SettingsPage';
+import ReportsPage from './components/business/reports/ReportsPage';
 
 function App() {
   const registrationForm = <Container><RegistrationForm /></Container>
@@ -57,6 +58,7 @@ function App() {
 
   const ticketsPage = <Container><TicketsPage /></Container> 
   const ticketDetailedPreview = <Container><TicketDetailedPreview /></Container> 
+  const reportsPage = <Container><ReportsPage /></Container> 
   // const userObjectsList = <Container><UserObjectsList /></Container>
   // const allObjectsList = <Container><AllObjectsList /></Container>
   // const createObjectForm = <Container><CreateObjectForm /></Container>'
@@ -97,13 +99,12 @@ function App() {
 
                   <Route path="/business/organize" element={createEventForm} />
                   <Route path="/business/my-events" element={myEventsPage} />
+                  <Route path="/business/reports" element={reportsPage} />
 
                   <Route path="/client/tickets" element={ticketsPage} />
                   <Route path="/client/tickets/:id" element={ticketDetailedPreview} />
-                  <Route path="/client/visited-events" element={underConstructionPage} /> 
 
                   <Route path="/admin/pending-events" element={pendingEventsPage} />
-                  <Route path="/admin/pending-reviews" element={underConstructionPage} /> 
 
                   <Route path="*" element={unavailablePage} />
                 </Route>

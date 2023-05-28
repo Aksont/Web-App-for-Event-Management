@@ -35,3 +35,12 @@ export async function getQR(ticketId){
         throw new Error(err.message);
     }
 }
+
+export async function postReportRequest(reportDTO){
+    try {
+        const responseData = await getTicketApiCall().post(`/report`, reportDTO);
+        return responseData;
+    } catch (err) {
+        throw new Error(err.message);
+    }
+}

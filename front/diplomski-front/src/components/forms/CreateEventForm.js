@@ -101,6 +101,25 @@ export function CreateEventForm() {
         }, [name, address, city, eventType, startDate, endDate, startTime, endTime, price, description]
     )
 
+    const fillInButtonPressed = (e) => {
+        e.preventDefault();
+        setName("Best Event Ever");
+        setAddress("Bulevar Mihajla Pupina 6");
+        setCity("Novi Sad");
+        setEventType("MUSIC");
+        setStartDate("2023-07-15");
+        setEndDate("2023-07-16");
+        setStartTime("19:40");
+        setEndTime("02:30");
+        setPrice("550");
+        setDescription("Join us for a fantastic concert, while looking at the Novi Sad Cathedral.");
+      }
+
+      const emptyButtonPressed = (e) => {
+        e.preventDefault();
+        emptyFields();
+      }
+
     return (<>
     <Row className='mt-5' >
         <Col sm={2} />
@@ -112,7 +131,17 @@ export function CreateEventForm() {
                             <Col sm={4} align='center'>
                                 Organize a new event
                             </Col>
-                            <Col sm={4}/>
+                            <Col sm={1}/>
+                            <Col sm={1} >
+                                <Button className='formButton' onClick={fillInButtonPressed}>
+                                    Fill in
+                                </Button>
+                            </Col>
+                            <Col sm={1} >
+                                <Button className='formButton' onClick={emptyButtonPressed}>
+                                    Empty
+                                </Button>
+                            </Col>
                     </Row> 
 
                     <LabeledInput value={name} label="Name" inputName="name" placeholder="Type event name" required onChangeFunc={setName}/>

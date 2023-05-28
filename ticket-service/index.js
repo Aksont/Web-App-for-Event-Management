@@ -72,6 +72,15 @@ function createTicketResponse(ticket) {
     return t;
 }
 
+class ReportDTO {
+    constructor(data) {
+        this.reportType = data.reportType;
+        this.fromDate = data.fromDate;
+        this.toDate = data.toDate;
+        this.eventIds = data.eventIds; // list
+    }
+}
+
 app.get('/', (req, res) => {
     let message = req.query.message || "ticket-service";
 
@@ -131,17 +140,168 @@ app.get("/qr/:ticketId", async (req, res) => {
 
 app.get("/tickets/:email", async (req, res) => {
     const email = req.params.email;
-    console.log(email)
-    const tickets = await getTicketsForUser(email);
-    let ticketResponses = []
-
-    for (let t of tickets){
-        const ticketResponse = createTicketResponse(t);
-        ticketResponses.push(ticketResponse);
-    }
+    const ticketResults = await getTicketsForUser(email);
+    const ticketResponses = getTicketsResponseFromResults(ticketResults);
 
     return res.json(ticketResponses);
 })
+
+app.post("/report", async (req, res) => {
+    let reportDTO = new ReportDTO(req.body);
+
+    if (!!reportDTO.fromDate && !!reportDTO.toDate && reportDTO.fromDate >= reportDTO.toDate){
+        res.status(409).send("Invalid date combination.");
+    } else if (!reportDTO.eventIds || reportDTO.eventIds.length === 0){
+        res.status(409).send("No event ids provided.");
+    }
+
+    reportDTO = await determineFromAndToDates(reportDTO);
+    let periods;
+
+    if (reportDTO.reportType === 'YEAR') {
+        periods = getReportYears(reportDTO);
+    } else if (reportDTO.reportType === 'MONTH') {
+        periods = getReportMonths(reportDTO);
+    } else {
+        return res.status(409).send("Invalid report type.");
+    }
+
+    const report = await getReportForPeriods(reportDTO, periods);
+
+    console.log(report)
+
+    return res.json(report);
+})
+
+async function determineFromAndToDates(reportDTO){
+    if (!reportDTO.fromDate || !reportDTO.toDate){
+        const [earliestDate, latestDate] = await findEarliestAndLatestDate(reportDTO.eventIds);
+
+        if (!reportDTO.fromDate) {
+            reportDTO['fromDate'] = earliestDate;
+        }
+
+        if (!reportDTO.toDate) {
+            reportDTO['toDate'] = latestDate;
+        }
+    }
+
+    return reportDTO;
+}
+
+async function findEarliestAndLatestDate(eventIds){
+    const query = "SELECT * FROM " + TICKETS_TABLE + " WHERE eventId IN " + getIdsAsSqlString(eventIds) + "ORDER BY boughtOnDate ASC";
+    const results = await doQuery(query);
+    
+    if (results.length > 0){
+        const first = createTicketResponse(results[0]).boughtOnDate;
+        const last = createTicketResponse(results[results.length - 1]).boughtOnDate;
+
+        return [first, last];
+    }
+
+    return [null, null]
+}
+
+function getReportYears(reportDTO){
+    let years = [];
+    const fromYear = Number(reportDTO.fromDate.split("-")[0]);
+    const toYear = Number(reportDTO.toDate.split("-")[0]);
+    let iYear = fromYear;
+
+    while (iYear <= toYear){
+        years.push(iYear);
+        iYear++;
+    }
+
+    return years;
+}
+
+function getReportMonths(reportDTO){
+    let months = [];
+    const fromYear = Number(reportDTO.fromDate.split("-")[0]);
+    const fromMonth = Number(reportDTO.fromDate.split("-")[1]);
+    const toYear = Number(reportDTO.toDate.split("-")[0]);
+    const toMonth = Number(reportDTO.toDate.split("-")[1]);
+    const finalPeriod = formatMonthPeriod(toYear, toMonth);
+    let iYear = fromYear;
+    let iMonth = fromMonth;
+    let iPeriod;
+
+    while (formatMonthPeriod(iYear, iMonth) <= finalPeriod){
+        iPeriod = formatMonthPeriod(iYear, iMonth);
+        months.push(iPeriod);
+        iMonth++;
+
+        if (iMonth === 13){
+            iMonth = 0;
+            iYear++;
+        }
+    }
+
+    return months;
+}
+
+function formatMonthPeriod(year, month){
+    let iPeriod = year + "-";
+    
+    if (month < 10){
+        iPeriod += "0";
+    } 
+
+    iPeriod += month;
+
+    return iPeriod;
+}
+
+async function getReportForPeriods(reportDTO, periods){
+    console.log(periods)
+    let report = [];
+
+    for (let period of periods){
+        const query = getReportPeriodQuery(reportDTO, period);
+        const results = await doQuery(query);
+        const tickets = getTicketsResponseFromResults(results);
+        const numOfTickets = tickets.length;
+        const income = tickets.reduce((sum, ticket) => sum + ticket.price, 0);
+
+        // let periodRep = {};
+        // periodRep[period] = {numOfTickets, totalPrice};
+        report.push({'period' : period.toString(), "numOfTickets": numOfTickets, "income": income});
+    }
+
+    return report;
+}
+
+function getReportPeriodQuery(reportDTO, period){
+    let query = "SELECT * FROM " + TICKETS_TABLE + " WHERE eventId IN " + getIdsAsSqlString(reportDTO.eventIds) + " AND boughtOnDate LIKE " + sqlStr(period + "%")
+                + " AND boughtOnDate >= " + sqlStr(reportDTO.fromDate)
+                + " AND boughtOnDate <= " + sqlStr(reportDTO.toDate); 
+    
+    return query;
+}
+
+function getIdsAsSqlString(eventIds){
+    let idsString = "(";
+
+    for (let i in eventIds){
+        idsString += eventIds[i];
+        idsString += (i < eventIds.length - 1) ? "," : ")";
+    }
+
+    return idsString;
+}
+
+function getTicketsResponseFromResults(results){
+    let ticketResponses = []
+
+    for (let r of results){
+        const ticketResponse = createTicketResponse(r);
+        ticketResponses.push(ticketResponse);
+    }
+
+    return ticketResponses;
+}
 
 async function getTicketsForUser(email){
     const query = "SELECT * FROM " + TICKETS_TABLE + " WHERE email = " + sqlStr(email);
