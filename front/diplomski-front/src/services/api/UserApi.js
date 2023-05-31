@@ -1,9 +1,9 @@
-import { getApiCall, getApiCallUrlEncoded, getUserApiCall } from "../Configs.js";
+import { getApiCall, getApiCallUrlEncoded, getUserApiCall, getUserApiCallNoToken } from "../Configs.js";
 
 
 export async function sendRegistrationRequest(regRequest){
     try {
-        const responseData = await getUserApiCall().post(`/register`, regRequest);
+        const responseData = await getUserApiCallNoToken().post(`/register`, regRequest);
         return responseData;
     } catch (err) {
         throw new Error(err.message);
@@ -12,7 +12,7 @@ export async function sendRegistrationRequest(regRequest){
 
 export async function sendLoginRequest(loginJson){
     try {
-        const responseData = await getUserApiCall().post(`/login`, loginJson);
+        const responseData = await getUserApiCallNoToken().post(`/login`, loginJson);
         return responseData;
     } catch (err) {
         throw new Error(err.message);

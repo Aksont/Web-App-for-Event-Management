@@ -1,6 +1,7 @@
 const express = require('express');
 const mysql = require('mysql');
 const cors = require("cors");
+const jwt = require('jsonwebtoken');
 
 const app = express();
 app.use(cors());
@@ -154,14 +155,14 @@ app.get("/available-events", async (req, res) => {
     return res.json(sortEventsByStartDate(eventResponses));
 })
 
-app.get("/pending-events", async (req, res) => {
+app.get("/pending-events", verifyToken, async (req, res) => {
     const events = await getPendingEvents();
     const eventResponses = await getEventResponsesFromEvents(events);
 
     return res.json(sortEventsByStartDate(eventResponses));
 })
 
-app.get("/events/:email", async (req, res) => {
+app.get("/events/:email", verifyToken, async (req, res) => {
     const email = req.params.email;
     const events = await getUserEvents(email);
     const eventResponses = await getEventResponsesFromEvents(events);
@@ -169,7 +170,7 @@ app.get("/events/:email", async (req, res) => {
     return res.json(sortEventsByStartDate(eventResponses));
 })
 
-app.put("/approve/:id", async (req, res) => {
+app.put("/approve/:id", verifyToken, async (req, res) => {
     const id = req.params.id;
     let event = await getEvent(id);
 
@@ -188,7 +189,7 @@ app.put("/approve/:id", async (req, res) => {
     }
 })
 
-app.put("/deny/:id", async (req, res) => {
+app.put("/deny/:id", verifyToken, async (req, res) => {
     const id = req.params.id;
     let event = await getEvent(id);
 
@@ -207,7 +208,7 @@ app.put("/deny/:id", async (req, res) => {
     }
 })
 
-app.post("/create-event", async (req, res) => {
+app.post("/create-event", verifyToken, async (req, res) => {
     const eventDTO = createEventDTO(req.body);
     
     if (!validateNewEventData(eventDTO)){
@@ -675,6 +676,8 @@ function fillInsertEventQuery(event) {
     return query;
 }
 
+// vvv every function uses: vvv
+
 function sqlStr(word){
     return "'" + word + "'";
 }
@@ -703,4 +706,29 @@ const pool = mysql.createPool({
     host: "35.184.63.121"  
 });
 
+// vvv JWT vvv
+
+const secretKey = 'Kw7bA3v9eN1TcXt6RiY5zSx8Fm2VgPq0LjH4uGn1My5Bp6Da3Cv9Kx7Zo2Ir5Fp0T';
+
+function verifyToken(req, res, next) {
+    const token = req.headers.authorization?.split(' ')[1]; 
+  
+    if (!token) {
+      return res.status(401).send("No token");
+    }
+  
+    jwt.verify(token, secretKey, (err, decoded) => {
+      if (err) {
+        return res.status(401).send("Invalid token");
+      }
+  
+      req.user = decoded;
+      next(); 
+    });
+  }
+
+// ^^^ JWT ^^^
+
 exports.appfunc = app;
+
+// ^^^ every function uses ^^^

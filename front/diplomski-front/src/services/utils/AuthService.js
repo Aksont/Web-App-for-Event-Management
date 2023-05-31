@@ -10,7 +10,7 @@ export const setToken = (token) => {
 }
 
 export const getToken = () => {
-   const token = sessionStorage.getItem("jwt");
+   const token = sessionStorage.getItem("token");
    
    if (!!token){
     return token;
@@ -31,7 +31,7 @@ export const getTokenWithNoQuotes = () => {
 }
 
 export const removeToken = () => {
-  return sessionStorage.removeItem("jwt");
+  return sessionStorage.removeItem("token");
 }
 
 export const getUserType = () => {

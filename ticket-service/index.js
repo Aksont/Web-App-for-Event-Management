@@ -4,6 +4,7 @@ const cors = require("cors");
 const { Storage } = require('@google-cloud/storage');
 const qr = require('qrcode');
 const { v4: uuidv4 } = require('uuid');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 app.use(cors());
@@ -81,7 +82,7 @@ class ReportDTO {
     }
 }
 
-app.post("/buy-ticket", async (req, res) => {
+app.post("/buy-ticket", verifyToken, async (req, res) => {
     let ticketDTO = createTicketDTO(req.body);
     ticketDTO.boughtOnDate = getTodayDate();
 
@@ -104,7 +105,7 @@ app.post("/buy-ticket", async (req, res) => {
     return res.json(ticketResponse);
 })
 
-app.get("/ticket/:id", async (req, res) => {
+app.get("/ticket/:id", verifyToken, async (req, res) => {
     const id = req.params.id;
     let ticket = await getTicketById(id);
 
@@ -115,7 +116,7 @@ app.get("/ticket/:id", async (req, res) => {
     return res.json(createTicketResponse(ticket));
 })
 
-app.get("/qr/:ticketId", async (req, res) => {
+app.get("/qr/:ticketId", verifyToken, async (req, res) => {
     const ticketId = req.params.ticketId;
     let ticket = await getTicketById(ticketId);
 
@@ -128,7 +129,7 @@ app.get("/qr/:ticketId", async (req, res) => {
     return res.json({'qr':qr});
 })
 
-app.get("/tickets/:email", async (req, res) => {
+app.get("/tickets/:email", verifyToken, async (req, res) => {
     const email = req.params.email;
     const ticketResults = await getTicketsForUser(email);
     const ticketResponses = getTicketsResponseFromResults(ticketResults);
@@ -136,7 +137,7 @@ app.get("/tickets/:email", async (req, res) => {
     return res.json(ticketResponses);
 })
 
-app.post("/report", async (req, res) => {
+app.post("/report", verifyToken, async (req, res) => {
     let reportDTO = new ReportDTO(req.body);
 
     if (!!reportDTO.fromDate && !!reportDTO.toDate && reportDTO.fromDate >= reportDTO.toDate){
@@ -423,6 +424,29 @@ const pool = mysql.createPool({
     // socketPath: "/cloudsql/diplomski-379607:us-central1:diplomski", // process.env.INSTANCE_CONNECTION_NAME
     host: "35.184.63.121"  
 });
+
+// vvv JWT vvv
+
+const secretKey = 'Kw7bA3v9eN1TcXt6RiY5zSx8Fm2VgPq0LjH4uGn1My5Bp6Da3Cv9Kx7Zo2Ir5Fp0T';
+
+function verifyToken(req, res, next) {
+    const token = req.headers.authorization?.split(' ')[1]; 
+  
+    if (!token) {
+      return res.status(401).send("No token");
+    }
+  
+    jwt.verify(token, secretKey, (err, decoded) => {
+      if (err) {
+        return res.status(401).send("Invalid token");
+      }
+  
+      req.user = decoded;
+      next(); 
+    });
+  }
+
+// ^^^ JWT ^^^
 
 exports.appfunc = app;
 

@@ -1,6 +1,7 @@
 const express = require('express');
 const mysql = require('mysql');
 const cors = require("cors");
+const jwt = require('jsonwebtoken');
 
 const app = express();
 app.use(cors());
@@ -98,7 +99,8 @@ app.post("/login", async (req, res) => {
     let user = await getUserByEmail(loginDTO.email);
 
     if (!!user && isPasswordCorrect(user, loginDTO.password)){
-        return res.json(createUserResponse(user));
+        const token = generateToken(user);
+        return res.json(token);
     }
 
     return res.status(409).send("Wrong login.");
@@ -116,7 +118,7 @@ function isPasswordOfValidFormat(password){
     return isCorrect;
 }
 
-app.put("/change-password", async (req, res) => {
+app.put("/change-password", verifyToken, async (req, res) => {
     let cpDTO = createChangePasswordDTO(req.body);
     let user = await getUserByEmail(cpDTO.email);
 
@@ -374,6 +376,41 @@ const pool = mysql.createPool({
     // socketPath: "/cloudsql/diplomski-379607:us-central1:diplomski", // process.env.INSTANCE_CONNECTION_NAME
     host: "35.184.63.121"  
 });
+
+// vvv JWT vvv
+
+const secretKey = 'Kw7bA3v9eN1TcXt6RiY5zSx8Fm2VgPq0LjH4uGn1My5Bp6Da3Cv9Kx7Zo2Ir5Fp0T';
+
+function generateToken(user) {
+    const payload = {
+      email: user.email,
+      userType: user.userType
+    };
+  
+    // Generate the token
+    const token = jwt.sign(payload, secretKey, { expiresIn: '1h' });
+    
+    return token;
+  }
+
+function verifyToken(req, res, next) {
+    const token = req.headers.authorization?.split(' ')[1];
+  
+    if (!token) {
+      return res.status(401).send("No token");
+    }
+  
+    jwt.verify(token, secretKey, (err, decoded) => {
+      if (err) {
+        return res.status(401).send("Invalid token");
+      }
+
+      req.user = decoded;
+      next(); 
+    });
+  }
+
+// ^^^ JWT ^^^
 
 exports.appfunc = app;
 

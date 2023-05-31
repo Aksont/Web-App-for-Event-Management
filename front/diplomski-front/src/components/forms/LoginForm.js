@@ -38,6 +38,15 @@ export function LoginForm() {
       return valid;
     }
 
+    const decodeToken = (token) => {
+        const base64Url = token.split('.')[1]; // Extract the payload part
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/'); // Replace characters to make it valid base64
+        const decodedPayload = JSON.parse(atob(base64)); // Decode the base64 payload and parse it as JSON
+
+        return decodedPayload;
+      }
+  
+
     const postLoginRequest = useCallback(
         (e) => {
             e.preventDefault();
@@ -46,10 +55,12 @@ export function LoginForm() {
 
             sendLoginRequest(userJson).then(
                 (response) => {
-                    console.log(response);
+                    const token = response.data;
+                    sessionStorage.setItem("token", token);
 
-                    sessionStorage.setItem("email", response.data.email);
-                    sessionStorage.setItem("userType", response.data.userType);
+                    const decodedPayload = decodeToken(token);
+                    sessionStorage.setItem("email", decodedPayload.email);
+                    sessionStorage.setItem("userType", decodedPayload.userType);
 
                     window.dispatchEvent(new Event("userUpdated"));
                     navigate("/explore");

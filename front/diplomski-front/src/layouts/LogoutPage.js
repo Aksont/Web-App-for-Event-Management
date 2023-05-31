@@ -13,7 +13,8 @@ export default function LogoutPage(){
                 console.log("logout");
                 sessionStorage.removeItem("userType")
                 sessionStorage.removeItem("email")
-                removeToken();
+                sessionStorage.removeItem("token")
+                // removeToken();
                 window.dispatchEvent(new Event("userUpdated"));
                 navigate('/login');
                 return response;
